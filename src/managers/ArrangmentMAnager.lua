@@ -154,4 +154,4 @@ function ManagerArrangement:debugRender()
     love.graphics.setColor(r, g, b, a)
 end
 
-return ManagerArrangement
+

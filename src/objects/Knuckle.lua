@@ -1,199 +1,216 @@
-Knuckle = Object:extend()
+Knuckle = Object:extend()  -- локальное определение
 
- --DEFAULT_SIZE_KNUCKLE = {70, 90}
- DEFAULT_COLOR_KNUCKLE = {39/255, 193/255, 211/255}
+-- Константы
+DEFAULT_COLOR_KNUCKLE = {39/255, 193/255, 211/255}
 
+local CONSTANTS = {
+    DEFAULT_COLOR = {39/255, 193/255, 211/255},
+    SHADOW_FACTOR = 0.7,
+    SELECT_OFFSET = 20,
+    POINT_PATTERNS = {
+        ONE = {{x = 0.5, y = 0.25}},
+        TWO = {{x = 0.2, y = 0.25}, {x = 0.8, y = 0.25}}
+    }
+}
+
+--[[ Конструктор класса костяшки домино ]]
 function Knuckle:new(value, radius)
-self.color =  DEFAULT_COLOR_KNUCKLE   
-self.x = DEFAULT_START_POSITION_KNUCKLES[1]
-self.y = DEFAULT_START_POSITION_KNUCKLES[2]
-self.toPosX = self.x
-self.toPosY = self.y
-self.width =  DEFAULT_SIZE_KNUCKLES[1]
-self.height =  DEFAULT_SIZE_KNUCKLES[2]
-self.v1 = value[1]
-self.v2 = value[2]
-self.radius = VIRTUAL_HEIGHT/100
-self.targetX = 0
-self.targetY = 0
-self.isMove = true
-self.isSelect = false
-self.up = 0 
+    self.color = DEFAULT_COLOR_KNUCKLE   
+    self.x = DEFAULT_START_POSITION_KNUCKLES[1]
+    self.y = DEFAULT_START_POSITION_KNUCKLES[2]
+    self.toPosX = self.x
+    self.toPosY = self.y
+    self.width = DEFAULT_SIZE_KNUCKLES[1]
+    self.height = DEFAULT_SIZE_KNUCKLES[2]
+    self.v1 = value[1]
+    self.v2 = value[2]
+    self.radius = VIRTUAL_HEIGHT/100
+    self.targetX = 0
+    self.targetY = 0
+    self.isMove = true
+    self.isSelect = false
+    self.isHover = false
+    self.up = 0 
 end
 
+--[[ Методы обновления и взаимодействия ]]
+function Knuckle:update(dt)
+    -- Здесь можно добавить логику анимации движения
+end
+
+-- Выбор костяшки (подъем/опускание)
 function Knuckle:select()
-    print("selcet") 
-    if  not self.isSelect then
-        self.y = self.y - 20
-        self.isSelect = true
+    self.isSelect = not self.isSelect
+    local offset = self.isSelect and -CONSTANTS.SELECT_OFFSET or CONSTANTS.SELECT_OFFSET
+    self.y = self.y + offset
+end
+
+-- Обработка наведения мыши
+function Knuckle:hover()
+    if self.isHover then
+        self:highlight()
     else
-        self.y = 500
-        self.isSelect = false
-     end
-end
-
-function Knuckle:isMouseOver(mx, my)
-    return mx >= self.x and mx <= self.x + self.width and my >= self.y and my <= self.y + self.height
-end
-
-function Knuckle:mousepressed(mx, my, button)
-    if button == 1 and self:isMouseOver(mx, my) then
-        self:select()
+        self:unhighlight()        
     end
 end
 
+-- Поворот костяшки
+function Knuckle:rotate()
+    self.rotation = self.rotation + math.pi/2
+    self.v1, self.v2 = self.v2, self.v1
+end
 
-
+--[[ Методы отрисовки ]]
+-- Основная функция отрисовки костяшки
 function Knuckle:draw()
-love.graphics.setColor(self.color[1], self.color[2], self.color[3])
+    love.graphics.setColor(self.color[1], self.color[2], self.color[3])
+    love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
+    love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
+    
+    love.graphics.setColor(1, 1, 1)
+    love.graphics.line(self.x + 8, self.y + self.height/2, 
+                      self.x + self.width - 8, self.y + self.height/2)
+    
+    self:drawPoints("up")
+    self:drawPoints("down")
+    self:drawShadows(self.color)
+    self:hover()
+end
 
---love.graphics.setColor(39/255, 193/255, 211/255)
-
-love.graphics.rectangle("fill", self.x , self.y , self.width, self.height)
-
-love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
-love.graphics.setColor(1,1,1)
-love.graphics.line(self.x + 8, self.y + self.height/2, self.x + self.width -8, self.y + self.height/2)
-love.graphics.setColor(1,1,1)
-
-love.graphics.setColor(1,1,1)
-self:drawPoints("up")
-self:drawPoints("down")
-self:drawShadows(self.color)
-end	
-
+-- Отрисовка теней костяшки
 function Knuckle:drawShadows(color)
-love.graphics.setColor(0,0,0) 
-local topXRight1 = self.x + self.width +1
-local topYRight1 = self.y + 1
-local topXRight2 = self.x + self.width + 2
-local topYRight2 = self.y + 2
-
-local bottomXRight1 = self.x + self.width +1
-local bottomYRight1 = self.y + self.height + 1
-local bottomXRight2 = self.x + self.width + 2
-local bottomYRight2 = self.y + 2 + self.height
-
-local bottomXLeft1 = self.x +1
-local bottomYLeft1 = self.y + self.height +1
-local bottomXLeft2 = self.x + 2
-local bottomYLeft2 = self.y + 2 + self.height
-
-love.graphics.line(topXRight1, topYRight1, topXRight2, topYRight2)
-love.graphics.line(bottomXRight1, bottomYRight1, bottomXRight2, bottomYRight2)
-love.graphics.line(topXRight1, topYRight1,bottomXRight1, bottomYRight1)
-love.graphics.line(topXRight2, topYRight2, bottomXRight2, bottomYRight2)
-love.graphics.line(bottomXLeft1, bottomYLeft1, bottomXLeft2, bottomYLeft2)
-
-love.graphics.line(bottomXLeft1, bottomYLeft1, bottomXRight1, bottomYRight1)
-love.graphics.line(bottomXLeft2, bottomYLeft2, bottomXRight2, bottomYRight2)
-
--- нижняя и боковая грань
-local factor = 0.7
-love.graphics.setColor( self.color[1] * factor, self.color[2]*factor, self.color[3]*factor)
-local bottomXLeft1Gran = self.x
-local bottomYLeft1Gran = self.y + self.height
-local bottomXRight1Gran = self.x + self.width 
-local bottomYRight1Gran = self.y + self.height
-local topXRight1Gran = self.x + self.width
-local topYRight1Gran = self.y
-love.graphics.line(bottomXLeft1Gran, bottomYLeft1Gran, bottomXRight1Gran, bottomYRight1Gran)
-love.graphics.line(topXRight1Gran, topYRight1Gran, bottomXRight1Gran, bottomYRight1Gran)
-love.graphics.setColor(1,1,1)
+    -- Края теней
+    love.graphics.setColor(0, 0, 0)
+    
+    local topXRight1 = self.x + self.width + 1
+    local topYRight1 = self.y + 1
+    local topXRight2 = self.x + self.width + 2
+    local topYRight2 = self.y + 2
+    
+    local bottomXRight1 = self.x + self.width + 1
+    local bottomYRight1 = self.y + self.height + 1
+    local bottomXRight2 = self.x + self.width + 2
+    local bottomYRight2 = self.y + 2 + self.height
+    
+    local bottomXLeft1 = self.x + 1
+    local bottomYLeft1 = self.y + self.height + 1
+    local bottomXLeft2 = self.x + 2
+    local bottomYLeft2 = self.y + 2 + self.height
+    
+    -- Отрисовка линий теней
+    love.graphics.line(topXRight1, topYRight1, topXRight2, topYRight2)
+    love.graphics.line(bottomXRight1, bottomYRight1, bottomXRight2, bottomYRight2)
+    love.graphics.line(topXRight1, topYRight1, bottomXRight1, bottomYRight1)
+    love.graphics.line(topXRight2, topYRight2, bottomXRight2, bottomYRight2)
+    love.graphics.line(bottomXLeft1, bottomYLeft1, bottomXLeft2, bottomYLeft2)
+    love.graphics.line(bottomXLeft1, bottomYLeft1, bottomXRight1, bottomYRight1)
+    love.graphics.line(bottomXLeft2, bottomYLeft2, bottomXRight2, bottomYRight2)
+    
+    -- Нижняя и боковая грани
+    local factor = CONSTANTS.SHADOW_FACTOR
+    love.graphics.setColor(self.color[1] * factor, self.color[2] * factor, self.color[3] * factor)
+    
+    local bottomXLeft1Gran = self.x
+    local bottomYLeft1Gran = self.y + self.height
+    local bottomXRight1Gran = self.x + self.width 
+    local bottomYRight1Gran = self.y + self.height
+    local topXRight1Gran = self.x + self.width
+    local topYRight1Gran = self.y
+    
+    love.graphics.line(bottomXLeft1Gran, bottomYLeft1Gran, bottomXRight1Gran, bottomYRight1Gran)
+    love.graphics.line(topXRight1Gran, topYRight1Gran, bottomXRight1Gran, bottomYRight1Gran)
+    love.graphics.setColor(1, 1, 1)
 end
 
+-- Отрисовка точек на костяшке
 function Knuckle:drawPoints(direction)
-local bias = 0
-local qauntity = self.v1
-
-if direction == "down" then
-	bias = self.height / 2
-    qauntity = self.v2
+    local bias = direction == "down" and self.height / 2 or 0
+    local quantity = direction == "down" and self.v2 or self.v1
+    
+    local patterns = {
+        [1] = function() self:drawOnePoints(bias) end,
+        [2] = function() self:drawTwoPoints(bias) end,
+        [3] = function() self:drawThreePoints(bias) end,
+        [4] = function() self:drawFourPoints(bias) end,
+        [5] = function() self:drawFivePoints(bias) end,
+        [6] = function() self:drawSixPoints(bias) end
+    }
+    
+    if patterns[quantity] then
+        patterns[quantity]()
+    end
 end
 
-if qauntity == 1 then
-self:drawOnePoints(bias)
-end
-
-if qauntity == 2 then
-self:drawTwoPoints(bias)
-end
-
-if qauntity == 3 then
-self:drawThreePoints(bias)
-end
-
-if qauntity == 4 then
-self:drawFourPoints(bias)
-end	
-
-if qauntity == 5 then
-self:drawFivePoints(bias)
-end
-if qauntity == 6 then
-self:drawSixPoints(bias)
-end
-
-end
-
+--[[ Методы отрисовки точек ]]
+-- Отрисовка одной точки
 function Knuckle:drawOnePoints(bias)
-local c1 = self.x + self.width / 2
-local c2 = self.y  + self.height /4 + bias
-love.graphics.circle("fill", c1, c2, self.radius)
+    local c1 = self.x + self.width / 2
+    local c2 = self.y + self.height / 4 + bias
+    love.graphics.circle("fill", c1, c2, self.radius)
 end
 
+-- Отрисовка двух точек
 function Knuckle:drawTwoPoints(bias)
-local c1 = self.x + self.radius * 3 
-local c2 = self.y  + self.height / 4 + bias
-love.graphics.circle("fill", c1, c2, self.radius)
+    local c1 = self.x + self.radius * 3 
+    local c2 = self.y + self.height / 4 + bias
+    love.graphics.circle("fill", c1, c2, self.radius)
+    
+    c1 = self.x + self.width - self.radius * 3
+    love.graphics.circle("fill", c1, c2, self.radius) 
+end
 
-local c1 = self.x +  self.width - self.radius * 3
-local c2 = self.y  + self.height /4 + bias
-love.graphics.circle("fill", c1, c2, self.radius) 
-end	
-
+-- Отрисовка трех точек
 function Knuckle:drawThreePoints(bias)
-local c1 = self.x + self.radius * 3 
-local c2 = self.y  + self.radius * 2 + bias
-love.graphics.circle("fill", c1, c2, self.radius)
-
-local c1 = self.x  + self.width - self.radius * 3  
-local c2 = self.y  +  self.height/ 2  - self.radius * 2 + bias
-love.graphics.circle("fill", c1, c2, self.radius)
-
-self:drawOnePoints(bias)
+    local c1 = self.x + self.radius * 3 
+    local c2 = self.y + self.radius * 2 + bias
+    love.graphics.circle("fill", c1, c2, self.radius)
+    
+    c1 = self.x + self.width - self.radius * 3  
+    c2 = self.y + self.height / 2 - self.radius * 2 + bias
+    love.graphics.circle("fill", c1, c2, self.radius)
+    
+    self:drawOnePoints(bias)
 end
 
+-- Отрисовка четырех точек
 function Knuckle:drawFourPoints(bias)
-local c1 = self.x + self.radius * 3 
-local c2 = self.y  + self.radius * 2 + bias
-
-love.graphics.circle("fill", c1, c2, self.radius)
-local c1 = self.x  + self.width - self.radius * 3  
-local c2 = self.y  +  self.height/ 2  - self.radius * 2 + bias
-love.graphics.circle("fill", c1, c2, self.radius)
- 
-local c1 = self.x + self.radius * 3  
-local c2 = self.y  + self.height/2 - self.radius * 2 + bias
-love.graphics.circle("fill", c1, c2, self.radius)
-
-local c1 = self.x + self.width - self.radius * 3 
-local c2 = self.y   +  self.radius * 2 + bias
-love.graphics.circle("fill", c1, c2, self.radius)
+    local c1 = self.x + self.radius * 3 
+    local c2 = self.y + self.radius * 2 + bias
+    love.graphics.circle("fill", c1, c2, self.radius)
+    
+    c1 = self.x + self.width - self.radius * 3  
+    c2 = self.y + self.height / 2 - self.radius * 2 + bias
+    love.graphics.circle("fill", c1, c2, self.radius)
+    
+    c1 = self.x + self.radius * 3  
+    c2 = self.y + self.height / 2 - self.radius * 2 + bias
+    love.graphics.circle("fill", c1, c2, self.radius)
+    
+    c1 = self.x + self.width - self.radius * 3 
+    c2 = self.y + self.radius * 2 + bias
+    love.graphics.circle("fill", c1, c2, self.radius)
 end
 
-
+-- Отрисовка пяти точек
 function Knuckle:drawFivePoints(bias)
-self:drawFourPoints(bias)
-self:drawOnePoints(bias)
+    self:drawFourPoints(bias)
+    self:drawOnePoints(bias)
 end
 
+-- Отрисовка шести точек
 function Knuckle:drawSixPoints(bias)
-self:drawFourPoints(bias)
-self:drawTwoPoints(bias)
+    self:drawFourPoints(bias)
+    self:drawTwoPoints(bias)
 end
 
-function Knuckle:Select(x, y)
-self.x = x
-self.y = y	
+--[[ Методы визуальных эффектов ]]
+-- Подсветка при наведении
+function Knuckle:highlight()
+    self.color = {self.color[1] * 0.5, self.color[2] * 0.5, self.color[3] * 0.5}
 end
+
+-- Снятие подсветки
+function Knuckle:unhighlight()
+    self.color = DEFAULT_COLOR_KNUCKLE
+end
+
