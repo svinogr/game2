@@ -1,4 +1,5 @@
 DealingManager = Object:extend()
+local Timer = require "src.lib.knife.timer"
 
 function DealingManager:new()
     self.isFirstDealing = 0
@@ -51,7 +52,11 @@ function DealingManager:handleFirstDealing(dt)
           end
         end
       end
+
+    
 end
+
+
 
 -- Добавление новых карт после сброса
 function DealingManager:addNewCards(deckSize)

@@ -14,11 +14,11 @@ WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 600
 
 -- virtual resolution dimensions
---VIRTUAL_WIDTH = 600
---VIRTUAL_HEIGHT = 451
+VIRTUAL_WIDTH = 600
+VIRTUAL_HEIGHT = 451
 
-VIRTUAL_WIDTH = 800
-VIRTUAL_HEIGHT = 600
+---VIRTUAL_WIDTH = 800
+--VIRTUAL_HEIGHT = 600
 
 DEFAULT_SIZE_KNUCKLES = { VIRTUAL_WIDTH / 10, VIRTUAL_HEIGHT / 4 }
 DEFAULT_START_POSITION_KNUCKLES = { VIRTUAL_WIDTH - (VIRTUAL_WIDTH - 10), VIRTUAL_HEIGHT - 10 - DEFAULT_SIZE_KNUCKLES[2] }
@@ -92,9 +92,13 @@ end
 
 function love.keyboard.hover(object)
 local x, y = love.mouse.getPosition()
+Vx, Vy = push:toGame(x, y)
+if Vx == nil or Vy == nil then
+    return
+end 
 
-if x > object.x and x < object.x + object.width 
-and y > object.y and y < object.y + object.height then
+if Vx > object.x and Vx < object.x + object.width 
+and Vy > object.y and Vy < object.y + object.height then
     return true
     else
     return false
@@ -104,7 +108,8 @@ end
 
 function love.mousepressed(x, y, button)
     love.keyboard.mouseData.button = {button}
-    love.keyboard.mouseData.pos = { x, y }
+     Vx, Vy = push:toGame(x, y)
+    love.keyboard.mouseData.pos = { Vx, Vy }
 end
 
 function love.keyboard.mouseWasPressedOn(object)

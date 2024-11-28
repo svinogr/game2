@@ -1,5 +1,6 @@
+require "src.lib.knife.test"
 Knuckle = Object:extend()  -- локальное определение
-
+local Timer = require 'src.lib.knife.timer'
 -- Константы
 DEFAULT_COLOR_KNUCKLE = {39/255, 193/255, 211/255}
 
@@ -40,9 +41,12 @@ end
 
 -- Выбор костяшки (подъем/опускание)
 function Knuckle:select()
+    
     self.isSelect = not self.isSelect
     local offset = self.isSelect and -CONSTANTS.SELECT_OFFSET or CONSTANTS.SELECT_OFFSET
     self.y = self.y + offset
+    
+
 end
 
 -- Обработка наведения мыши
