@@ -1,7 +1,7 @@
 GameManager = Object:extend()
 require "managerarrangment"
 require "manager_knuckles"
-require "managerButtons"
+require "src.managers.ButtonsManager"
 require "Knuckle"
 
 

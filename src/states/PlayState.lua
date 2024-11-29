@@ -3,7 +3,8 @@ require "src.objects.Backside"
 require "src.managers.ManagerKnuckles"
 require "src.objects.Knuckle"
 require "src.managers.DealingManager"
-require "src.managers.ArrangmentMAnager"
+require "src.managers.ArrangmentManager"
+require "src.managers.ButtonsManager"
 
 -- Состояния игры
 GameStates = {
@@ -28,9 +29,12 @@ function PlayState:new()
     self.knucklesManager = ManagerKnuckles()
     self.knucklesManager:initialize()
     self.dealingManager:initialize(self.arrangement, self.knucklesManager)
- 
+    self.buttonsManager = ManagerButtons()
+    self.buttonsManager:initialize(self.arrangement)
+
     -- Инициализация колоды в руке
     self.handDeck = {}
+    self.buttons = {}
     
     -- Установка начального состояния
     self.curentState = GameStates.DEALING
@@ -68,20 +72,41 @@ function PlayState:update(dt)
                 self.handDeck[i]:select()
             end
         end
+
+        for i = 1, #self.buttons do
+            if love.keyboard.hover(self.buttons[i]) then
+                self.buttons[i].isHover = true
+            else 
+                self.buttons[i].isHover = false
+            end
+        end
+
     end
+
 end
 
 --[[ Отрисовка игрового состояния ]]
 function PlayState:render()
+    -- Отрисовка фона
+    love.graphics.setColor(0.5, 0.5, 0.5)
+    love.graphics.rectangle('fill', 0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT)
+    love.graphics.setColor(1, 1, 1)
+
     -- Отрисовка игрового стола
     self:drawTable()
     
     -- Отрисовка рубашки костяшек
     self.backSideKnucle:draw(DEFAULT_COLOR_BACKSIDE)
+
     
     -- Отрисовка костяшек в руке
     for _, knuckle in ipairs(self.handDeck) do
         knuckle:draw(DEFAULT_COLOR_KNUCKLE)
+    end
+    
+    -- Отрисовка кнопок
+    if self.buttonsManager then
+        self.buttonsManager:draw()
     end
     
     -- Отрисовка отладочной информации
@@ -99,6 +124,7 @@ end
 
 -- Обработка входа в состояние
 function PlayState:enter()
+  self.buttons = self.buttonsManager.buttons
     -- TODO: Инициализация начальной раздачи
 end
 
@@ -117,5 +143,17 @@ function PlayState:mousepressed(x, y, button)
                 -- TODO: Добавить сброс выбранной карты
             end
         end
+    end
+    
+    -- Обработка нажатий кнопок
+    if self.buttonsManager then
+        self.buttonsManager:mousepressed(x, y, button)
+    end
+end
+
+function PlayState:mousereleased(x, y, button)
+    -- Обработка отпускания кнопок
+    if self.buttonsManager then
+        self.buttonsManager:mousereleased(x, y, button)
     end
 end

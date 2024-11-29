@@ -1,6 +1,6 @@
 ManagerArrangment = Object:extend()
 require "manager_knuckles"
-require "managerButtons"
+require "src.managers.ButtonsManager"
 
 function ManagerArrangment:new(deckSize, mB, mk)
   self.decksize                = deckSize

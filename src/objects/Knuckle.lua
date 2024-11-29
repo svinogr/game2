@@ -210,7 +210,7 @@ end
 --[[ Методы визуальных эффектов ]]
 -- Подсветка при наведении
 function Knuckle:highlight()
-    self.color = {self.color[1] * 0.5, self.color[2] * 0.5, self.color[3] * 0.5}
+    self.color = {self.color[1] * 1.01, self.color[2] * 1.01, self.color[3] * 1.01}
 end
 
 -- Снятие подсветки

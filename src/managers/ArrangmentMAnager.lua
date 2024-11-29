@@ -1,12 +1,14 @@
-ManagerArrangement = Object:extend()
 require "src.objects.Knuckle"
 require "src.objects.Backside"
-
+ManagerArrangement = Object:extend()
 -- Константы для зон на столе
-local ZONES = {
+ ZONES = {
     HAND = "hand",           -- Зона руки игрока
     DISCARD = "discard",     -- Зона сброса
-    DECK = "deck"           -- Зона колоды
+    DECK = "deck",
+    GAME_BUTTONS = "game_buttons", -- Зона кнопок хода
+    GAME_FIELD = "game_field",
+    GAME_TABLO = "game_tablo"
 }
 
 function ManagerArrangement:new()
@@ -24,26 +26,51 @@ function ManagerArrangement:new()
         isFree = {}
     }
 
+    self.turnPositions = {
+        x = {},
+        y = {},
+        isFree = {}
+    }
+
     -- Размеры и позиции зон
     local handZoneY = VIRTUAL_HEIGHT - DEFAULT_SIZE_KNUCKLES[2] - 10
+    local ofsetXY = 10
     
     self.zones = {
         [ZONES.HAND] = {
             x = DEFAULT_SIZE_KNUCKLES[1] + 40,
             y = handZoneY,
-            width = VIRTUAL_WIDTH - 140,
+            width = DEFAULT_SIZE_KNUCKLES[1] * 6 + 5*10,
             height = DEFAULT_SIZE_KNUCKLES[2] 
         },
         [ZONES.DISCARD] = {
-            x = 10,
+            x = ofsetXY,
             y = handZoneY - DEFAULT_SIZE_KNUCKLES[2] - 10,
             width = DEFAULT_SIZE_KNUCKLES[1] + 15,-- чтобы было видно из под карт
             height = DEFAULT_SIZE_KNUCKLES[2]
         },
         [ZONES.DECK] = {
-            x = 10,
+            x = ofsetXY,
             y = VIRTUAL_HEIGHT- DEFAULT_SIZE_KNUCKLES[2] - 10,
             width = DEFAULT_SIZE_KNUCKLES[1] + 15, -- чтобы было видно из под карт
+            height = DEFAULT_SIZE_KNUCKLES[2]
+        },
+        [ZONES.GAME_BUTTONS] = {
+            x = VIRTUAL_WIDTH - DEFAULT_SIZE_KNUCKLES[1] - 10,
+            y = VIRTUAL_HEIGHT- DEFAULT_SIZE_KNUCKLES[2] - 10,
+            width = DEFAULT_SIZE_KNUCKLES[1] , -- чтобы было видно из под карт
+            height = DEFAULT_SIZE_KNUCKLES[2]
+        },
+        [ZONES.GAME_FIELD] = {  
+            x = DEFAULT_SIZE_KNUCKLES[1] + 30 + ofsetXY,
+            y = DEFAULT_SIZE_KNUCKLES[2] + 20,
+            width = DEFAULT_SIZE_KNUCKLES[1] * 6 + 5*10,
+            height = VIRTUAL_HEIGHT - DEFAULT_SIZE_KNUCKLES[2] * 2 - 20 - 20
+        },
+        [ZONES.GAME_TABLO] = {  
+            x =ofsetXY,
+            y = ofsetXY,
+            width = VIRTUAL_WIDTH - 20 ,
             height = DEFAULT_SIZE_KNUCKLES[2]
         }
     }
@@ -148,6 +175,27 @@ function ManagerArrangement:debugRender()
         self.zones[ZONES.DECK].y,
         self.zones[ZONES.DECK].width,
         self.zones[ZONES.DECK].height
+    )
+
+    love.graphics.rectangle("fill",
+        self.zones[ZONES.GAME_BUTTONS].x,
+        self.zones[ZONES.GAME_BUTTONS].y,
+        self.zones[ZONES.GAME_BUTTONS].width,
+        self.zones[ZONES.GAME_BUTTONS].height
+    )
+
+    love.graphics.rectangle("fill",
+        self.zones[ZONES.GAME_FIELD].x,
+        self.zones[ZONES.GAME_FIELD].y,
+        self.zones[ZONES.GAME_FIELD].width,
+        self.zones[ZONES.GAME_FIELD].height
+    )
+
+    love.graphics.rectangle("fill",
+        self.zones[ZONES.GAME_TABLO].x,
+        self.zones[ZONES.GAME_TABLO].y,
+        self.zones[ZONES.GAME_TABLO].width,
+        self.zones[ZONES.GAME_TABLO].height
     )
 
     -- Восстанавливаем исходный цвет
