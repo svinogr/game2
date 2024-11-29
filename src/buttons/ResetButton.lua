@@ -6,7 +6,6 @@ function ResetButton:new()
     ResetButton.super:new()
 end
 
-function ResetButton:onClick()
-end
+
 
 

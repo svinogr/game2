@@ -2,6 +2,12 @@ ManagerButtons = Object:extend()
 require "src.buttons.ResetButton"
 require "src.buttons.TurnButton"
 
+ButtonsTitle = {
+    RESET = "reset",
+    TURN = "turn"
+}
+
+
 function ManagerButtons:new()
     self.buttons = {}
 end
@@ -13,14 +19,14 @@ function ManagerButtons:initialize(arrangement)
     self.resetButton.y = arrangement.zones[ZONES.GAME_BUTTONS].y
     self.resetButton.width = DEFAULT_SIZE_KNUCKLES[1]
     self.resetButton.height = DEFAULT_SIZE_KNUCKLES[2]/2
-    self.resetButton.text = "reset"
+    self.resetButton.text = ButtonsTitle.RESET
 
     self.turnButton = TurnButton()
     self.turnButton.x = arrangement.zones[ZONES.GAME_BUTTONS].x
     self.turnButton.y = arrangement.zones[ZONES.GAME_BUTTONS].y + DEFAULT_SIZE_KNUCKLES[2]/2
     self.turnButton.width = DEFAULT_SIZE_KNUCKLES[1]
     self.turnButton.height = DEFAULT_SIZE_KNUCKLES[2]/2
-    self.turnButton.text = "turn"
+    self.turnButton.text = ButtonsTitle.TURN
 
     table.insert(self.buttons, self.resetButton)
     table.insert(self.buttons, self.turnButton)

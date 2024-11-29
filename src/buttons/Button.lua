@@ -55,10 +55,8 @@ function Button:mousepressed(x, y, button)
     end
 end
 
-function Button:mousereleased(x, y, button)
-    if button == 1 then
-        self.isPressed = false
-    end
+function Button:select()
+   print(self.text)
 end
 
 

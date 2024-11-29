@@ -47,15 +47,6 @@ function ManagerKnuckles:getRandomKnucles(quantity)
   return deck
 end
 
-function ManagerKnuckles:removeSelectedKnucleFromHand()
-  for i = #self.handDeck, 1, -1 do
-    if self.handDeck[i].isSelect then
-      table.remove(self.handDeck, i)
-    end
-  end
-  
-end
-
 function ManagerKnuckles:createDeck()
   local index = 1
   for i = 1, 6 do

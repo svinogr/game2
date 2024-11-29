@@ -61,9 +61,9 @@ function love.update(dt)
     gStateMachine:update(dt)
 
     love.keyboard.keysPressed = {}
-     
-   love.keyboard.mouseData.button = {}
-   love.keyboard.mouseData.pos = {}
+
+    love.keyboard.mouseData.button = {}
+    love.keyboard.mouseData.pos = {}
 end
 
 function love.resize(w, h)
@@ -84,44 +84,41 @@ end
 
 function love.draw()
     push:start()
-    
+
     gStateMachine:render()
-    
+
     push:finish()
 end
 
 function love.keyboard.hover(object)
-local x, y = love.mouse.getPosition()
-Vx, Vy = push:toGame(x, y)
-if Vx == nil or Vy == nil then
-    return
-end 
+    local x, y = love.mouse.getPosition()
+    Vx, Vy = push:toGame(x, y)
+    if Vx == nil or Vy == nil then
+        return
+    end
 
-if Vx > object.x and Vx < object.x + object.width 
-and Vy > object.y and Vy < object.y + object.height then
-    return true
+    if Vx > object.x and Vx < object.x + object.width
+        and Vy > object.y and Vy < object.y + object.height then
+        return true
     else
-    return false
-end
-
+        return false
+    end
 end
 
 function love.mousepressed(x, y, button)
-    love.keyboard.mouseData.button = {button}
-     Vx, Vy = push:toGame(x, y)
+    love.keyboard.mouseData.button = { button }
+    Vx, Vy = push:toGame(x, y)
     love.keyboard.mouseData.pos = { Vx, Vy }
 end
 
 function love.keyboard.mouseWasPressedOn(object)
     if love.keyboard.mouseData.button[1] == 1 then
-                if love.keyboard.mouseData.pos[1] > object.x and love.keyboard.mouseData.pos[1] < object.x + object.width
-                   and
-                   love.keyboard.mouseData.pos[2] > object.y and love.keyboard.mouseData.pos[2] < object.y + object.height then
-                    return true 
-                else
-                    return false    
-                end
-    end 
+        if love.keyboard.mouseData.pos[1] > object.x and love.keyboard.mouseData.pos[1] < object.x + object.width
+            and
+            love.keyboard.mouseData.pos[2] > object.y and love.keyboard.mouseData.pos[2] < object.y + object.height then
+            return true
+        else
+            return false
+        end
+    end
 end
-
-
