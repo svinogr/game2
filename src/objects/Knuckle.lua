@@ -15,7 +15,8 @@ local CONSTANTS = {
 }
 
 --[[ Конструктор класса костяшки домино ]]
-function Knuckle:new(value, radius)
+function Knuckle:new(id, value, radius)
+    self.id = id or 0
     self.color = DEFAULT_COLOR_KNUCKLE   
     self.x = DEFAULT_START_POSITION_KNUCKLES[1]
     self.y = DEFAULT_START_POSITION_KNUCKLES[2]
@@ -25,7 +26,7 @@ function Knuckle:new(value, radius)
     self.height = DEFAULT_SIZE_KNUCKLES[2]
     self.v1 = value[1]
     self.v2 = value[2]
-    self.radius = VIRTUAL_HEIGHT/100
+    self.radius = radius or VIRTUAL_HEIGHT/100
     self.targetX = 0
     self.targetY = 0
     self.isMove = true
@@ -72,7 +73,7 @@ function Knuckle:draw()
     love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
     
     love.graphics.setColor(1, 1, 1)
-    love.graphics.line(self.x + 8, self.y + self.height/2, 
+    love.graphics.line(self.x + 8, self.y + self.height/2,
                       self.x + self.width - 8, self.y + self.height/2)
     
     self:drawPoints("up")

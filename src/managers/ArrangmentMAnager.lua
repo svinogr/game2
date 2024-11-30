@@ -93,7 +93,7 @@ function ManagerArrangement:initialize(handSize)
     local discardX = self.zones[ZONES.DISCARD].x
     local discardY = self.zones[ZONES.DISCARD].y
 
-    for i = 1, 10 do  -- Максимум 10 карт в зоне сброса
+    for i = 1, handSize do  -- Максимум 10 карт в зоне сброса
         self.discardPositions.x[i] = discardX + (i-1) * 5  -- Небольшое смещение для эффекта стопки
         self.discardPositions.y[i] = discardY
         self.discardPositions.isFree[i] = true

@@ -31,7 +31,7 @@ function PlayState:new()
     self.movingManager = MovingManager()
     self.movingManager:initialize(self.arrangement)
     self.knucklesManager:initialize()
-    self.dealingManager:initialize(self.arrangement, self.knucklesManager)
+    --self.dealingManager:initialize(self.arrangement, self.knucklesManager)
     self.buttonsManager = ManagerButtons()
     self.buttonsManager:initialize(self.arrangement)
 
@@ -51,29 +51,39 @@ end
 function PlayState:update(dt)
     -- Обработка состояния раздачи
     if self.curentState == GameStates.DEALING then
-        self.dealingManager:update(dt)
-        self.handDeck = self.dealingManager.handDeck
-
-        -- Если первая раздача завершена, переходим к ходу игрока
-        if self.dealingManager.isFirstDealing >= 5 then
+        print("DEALING")
+        -- получаем нужное количество случайных карт (5)
+        local knucles = self.knucklesManager:dealingKnucles(5)
+        self.movingManager:update(dt, knucles, GameStates.DEALING)
+        if self.movingManager.complete then
             self.curentState = GameStates.PLAYER_THINK
         end
+
+        -- убрать дилинг менеджер и перенести в накл менеджер
+        --self.dealingManager:update(dt)
+       -- self.handDeck = self.dealingManager.handDeck
+
+        -- Если первая раздача завершена, переходим к ходу игрока
+
+        --if self.dealingManager.isFirstDealing >= 5 then
+          --  self.curentState = GameStates.PLAYER_THINK
+        --end
     end
 
     -- Обработка состояния размышления игрока
     if self.curentState == GameStates.PLAYER_THINK then
-        for i = 1, #self.handDeck do
+        for i = 1, #self.knucklesManager.handDeck do
             -- Обработка наведения мыши
-            if love.keyboard.hover(self.handDeck[i]) then
-                self.handDeck[i].isHover = true
+            if love.keyboard.hover(self.knucklesManager.handDeck[i]) then
+                self.knucklesManager.handDeck[i].isHover = true
             else
-                self.handDeck[i].isHover = false
+                self.knucklesManager.handDeck[i].isHover = false
             end
 
             -- Обработка выбора костяшки
-            if love.mouse.isDown(1) and love.keyboard.mouseWasPressedOn(self.handDeck[i]) then
+            if love.mouse.isDown(1) and love.keyboard.mouseWasPressedOn(self.knucklesManager.handDeck[i]) then
                 print("mousepressed")
-                self.handDeck[i]:select()
+                self.knucklesManager.handDeck[i]:select()
             end
         end
 
@@ -89,15 +99,15 @@ function PlayState:update(dt)
                 print("mousepressed")
                 self.buttons[i]:select()
 
-                for i = 1, #self.handDeck do
-                    if self.handDeck[i].isSelect then
-                        table.insert(self.resetKnucles, self.handDeck[i])
+                for i = 1, #self.knucklesManager.handDeck do
+                    if self.knucklesManager.handDeck[i].isSelect then
+                        table.insert(self.knucklesManager.resetKnucles, self.knucklesManager.handDeck[i])
                     end
                 end
 
-                if self.buttons[i].text == ButtonsTitle.RESET and #self.resetKnucles > 0 then
+                if self.buttons[i].text == ButtonsTitle.RESET and #self.knucklesManager.resetKnucles > 0 then
                     self.curentState = GameStates.DISCARD
-                elseif self.buttons[i].text == ButtonsTitle.TURN and #self.resetKnucles > 0 then
+                elseif self.buttons[i].text == ButtonsTitle.TURN and #self.knucklesManager.resetKnucles > 0 then
                     self.curentState = GameStates.PLAYER_TURN
                 end
 
@@ -108,23 +118,11 @@ function PlayState:update(dt)
 
     if self.curentState == GameStates.DISCARD then
         print("DISCARD")
-        self.movingManager:update(dt, self.resetKnucles, GameStates.DISCARD)
-
-
-        local changingState = #self.resetKnucles
-        for i = 1, #self.resetKnucles do
-            if self.resetKnucles[i].isSelect == true then
-                changingState = changingState - 1
-            end
-
-        end
-        
-        if changingState == #self.resetKnucles then
+        self.movingManager:update(dt, self.knucklesManager.resetKnucles, GameStates.DISCARD)
+          if self.movingManager.complete then
+            print("change state")
             self.curentState = GameStates.PLAYER_THINK
-            self.resetKnucles = {}
-
-            -- освобождение  позиции руки и удалить карты из руки
-            -- выделение элемента происходит неограничено. ограничить 
+            self.knucklesManager:removeResetKnucles()
           
         end
     end
@@ -148,10 +146,7 @@ function PlayState:render()
     self.backSideKnucle:draw(DEFAULT_COLOR_BACKSIDE)
 
 
-    -- Отрисовка костяшек в руке
-    for _, knuckle in ipairs(self.handDeck) do
-        knuckle:draw(DEFAULT_COLOR_KNUCKLE)
-    end
+   
 
     -- Отрисовка кнопок
     if self.buttonsManager then
@@ -161,6 +156,11 @@ function PlayState:render()
     -- Отрисовка отладочной информации
     if self.debugMode then
         self.arrangement:debugRender()
+    end
+
+     -- Отрисовка костяшек в руке
+     for _, knuckle in ipairs(self.knucklesManager.handDeck) do
+        knuckle:draw(DEFAULT_COLOR_KNUCKLE)
     end
 end
 
@@ -206,3 +206,5 @@ function PlayState:mousereleased(x, y, button)
         self.buttonsManager:mousereleased(x, y, button)
     end
 end
+
+

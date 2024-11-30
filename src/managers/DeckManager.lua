@@ -30,7 +30,8 @@ function DeckManager:getRandomNumber()
     for i = 1, 6 do
       for j = 1, 6 do
         local value = { i, j }
-        local kn = Knuckle(value, 1)
+        local id = index
+        local kn = Knuckle(id, value, 1)
         self.deck[index] = kn
         -- print("Creating Knuckle at position:",kn.v1, kn.v2)
         index = index + 1

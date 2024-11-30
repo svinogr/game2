@@ -6,9 +6,10 @@ require "src.objects.Backside"
 --карты
 --руку с картами
 function ManagerKnuckles:new()
-   self.deck          = {}
+  self.deck          = {}
   self.usedNumbers   = {}
   self.handDeck      = {}
+  self.resetKnucles  = {}
   self.bakside       = nil
 end
 
@@ -17,7 +18,7 @@ self:createDeck()
 end
 
 -- добавление карт из колоды 
-function ManagerKnuckles:addNewKnucles(deckSize)
+--[[ function ManagerKnuckles:addNewKnucles(deckSize)
      -- узнаем сколько карт нужно добавить
     local neededQyantity  = deckSize - #self.handDeck
      -- получаем карты
@@ -30,7 +31,7 @@ function ManagerKnuckles:addNewKnucles(deckSize)
      print(#self.handDeck)
 
   
-end
+end ]]
 
 function ManagerKnuckles:getRandomKnucles(quantity)
   --[[  if #self.usedNumbers >= #self.deck then
@@ -41,18 +42,28 @@ function ManagerKnuckles:getRandomKnucles(quantity)
     local number = self:getRandomNumber()
     local kn = self.deck[number]
     --print("kn:", kn.v1, kn.v2, 50)       -- Добавьте это для отладки
-    table.insert(deck, kn)
+    table.insert(self.handDeck, kn)
     --self.handDeck[i] = kn
   end
-  return deck
+   return self.handDeck
 end
+
+function ManagerKnuckles: dealingKnucles(quantity)
+   if #self.handDeck < quantity then
+         self:getRandomKnucles(quantity)
+   end
+   
+   return self.handDeck
+  
+end
+
 
 function ManagerKnuckles:createDeck()
   local index = 1
   for i = 1, 6 do
     for j = 1, 6 do
       local value = { i, j }
-      local kn = Knuckle(value, 2)
+      local kn = Knuckle(index, value, 4)
       self.deck[index] = kn
       -- print("Creating Knuckle at position:",kn.v1, kn.v2)
       index = index + 1
@@ -66,18 +77,18 @@ function ManagerKnuckles:createBackSide()
 --  print(self.bakside == nil)
 end
 
-function ManagerKnuckles:getBackside()
+--[[ function ManagerKnuckles:getBackside()
   return self.bakside
 end
-
-function ManagerKnuckles:getSelectedKnucles()
+ ]]
+--[[ function ManagerKnuckles:getSelectedKnucles()
   local selected = {}
   for _, value in ipairs(self.handDeck) do
     table.insert(selected, value)
   end
 
   return selected
-end
+end ]]
 
 
 function ManagerKnuckles:getRandomNumber()
@@ -97,3 +108,18 @@ function ManagerKnuckles:getRandomNumber()
 
   return number
 end
+
+function ManagerKnuckles:removeResetKnucles()
+  for i =1, #self.resetKnucles do
+      for j =  #self.handDeck, 1, -1 do
+         if self.resetKnucles[i].id == self.handDeck[j].id then
+          table.remove(self.handDeck, j)
+          end
+      end
+  end
+
+  self.resetKnucles = {}
+end
+
+
+
