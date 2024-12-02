@@ -24,24 +24,28 @@ function PlayState:new()
 
     -- Создание основных игровых менеджеров
     self.backSideKnucle = BackSide(DEFAULT_SIZE_KNUCKLES, DEFAULT_START_POSITION_KNUCKLES)
+   
     self.arrangement = ManagerArrangement()
     self.arrangement:initialize(countKnucles)
+   
     self.dealingManager = DealingManager()
+    
     self.knucklesManager = ManagerKnuckles()
+    self.knucklesManager:initialize()
+
     self.movingManager = MovingManager()
     self.movingManager:initialize(self.arrangement)
-    self.knucklesManager:initialize()
+   
     --self.dealingManager:initialize(self.arrangement, self.knucklesManager)
     self.buttonsManager = ManagerButtons()
     self.buttonsManager:initialize(self.arrangement)
 
     -- Инициализация колоды в руке
     self.handDeck = {}
-    self.resetKnucles = {}
     self.buttons = {}
 
     -- Установка начального состояния
-    self.curentState = GameStates.DEALING
+    self.currentState = GameStates.DEALING
 
     -- Флаги для отладки
     self.debugMode = true
@@ -50,28 +54,19 @@ end
 --[[ Обновление состояния игры ]]
 function PlayState:update(dt)
     -- Обработка состояния раздачи
-    if self.curentState == GameStates.DEALING then
+    if self.currentState == GameStates.DEALING then
         print("DEALING")
         -- получаем нужное количество случайных карт (5)
         local knucles = self.knucklesManager:dealingKnucles(5)
         self.movingManager:update(dt, knucles, GameStates.DEALING)
+
         if self.movingManager.complete then
-            self.curentState = GameStates.PLAYER_THINK
+            self.currentState = GameStates.PLAYER_THINK
         end
-
-        -- убрать дилинг менеджер и перенести в накл менеджер
-        --self.dealingManager:update(dt)
-       -- self.handDeck = self.dealingManager.handDeck
-
-        -- Если первая раздача завершена, переходим к ходу игрока
-
-        --if self.dealingManager.isFirstDealing >= 5 then
-          --  self.curentState = GameStates.PLAYER_THINK
-        --end
     end
 
     -- Обработка состояния размышления игрока
-    if self.curentState == GameStates.PLAYER_THINK then
+    if self.currentState == GameStates.PLAYER_THINK then
         for i = 1, #self.knucklesManager.handDeck do
             -- Обработка наведения мыши
             if love.keyboard.hover(self.knucklesManager.handDeck[i]) then
@@ -101,14 +96,14 @@ function PlayState:update(dt)
 
                 for i = 1, #self.knucklesManager.handDeck do
                     if self.knucklesManager.handDeck[i].isSelect then
-                        table.insert(self.knucklesManager.resetKnucles, self.knucklesManager.handDeck[i])
+                        table.insert(self.knucklesManager.selectedKnucles, self.knucklesManager.handDeck[i])
                     end
                 end
 
-                if self.buttons[i].text == ButtonsTitle.RESET and #self.knucklesManager.resetKnucles > 0 then
-                    self.curentState = GameStates.DISCARD
-                elseif self.buttons[i].text == ButtonsTitle.TURN and #self.knucklesManager.resetKnucles > 0 then
-                    self.curentState = GameStates.PLAYER_TURN
+                if self.buttons[i].text == ButtonsTitle.RESET and #self.knucklesManager.selectedKnucles > 0 then
+                    self.currentState = GameStates.DISCARD
+                elseif self.buttons[i].text == ButtonsTitle.TURN and #self.knucklesManager.selectedKnucles > 0 then
+                    self.currentState = GameStates.PLAYER_TURN
                 end
 
                 self.buttons[i].isHover = false
@@ -116,19 +111,26 @@ function PlayState:update(dt)
         end
     end
 
-    if self.curentState == GameStates.DISCARD then
+    if self.currentState == GameStates.DISCARD then
         print("DISCARD")
-        self.movingManager:update(dt, self.knucklesManager.resetKnucles, GameStates.DISCARD)
+        self.movingManager:update(dt, self.knucklesManager.selectedKnucles, GameStates.DISCARD)
           if self.movingManager.complete then
             print("change state")
-            self.curentState = GameStates.PLAYER_THINK
-            self.knucklesManager:removeResetKnucles()
+            self.currentState = GameStates.PLAYER_THINK
+            self.knucklesManager:removeSelectedKnucles()
           
         end
     end
 
-    if self.curentState == GameStates.PLAYER_TURN then
+    if self.currentState == GameStates.PLAYER_TURN then
         print("PLAYER_TURN")
+        self.movingManager:update(dt, self.knucklesManager.selectedKnucles, GameStates.PLAYER_TURN)
+        if self.movingManager.complete then
+          print("change state")
+         self.currentState = GameStates.SCORING
+    
+         --- self.knucklesManager:removeSelectedKnucles() перенести в scoring
+      end
     end
 end
 
@@ -184,7 +186,7 @@ end
 -- Обработка кликов мыши
 function PlayState:mousepressed(x, y, button)
     if button == 1 then -- Левый клик
-        if self.curentState == GameStates.PLAYER_TURN then
+        if self.currentState == GameStates.PLAYER_TURN then
             -- Проверка зоны клика
             if self.arrangement:isInZone(x, y, "hand") then
                 -- TODO: Добавить выбор карты

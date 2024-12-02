@@ -11,6 +11,8 @@ ManagerArrangement = Object:extend()
     GAME_TABLO = "game_tablo"
 }
 
+QAUNTITY_ITEMS_GAME_FIELD = 3 -- количество карт на игровом столе
+
 function ManagerArrangement:new()
     -- Позиции для карт в руке
     self.handPositions = {
@@ -26,7 +28,8 @@ function ManagerArrangement:new()
         isFree = {}
     }
 
-    self.turnPositions = {
+    -- позиции для выложеных карт
+    self.gameFieldPositions = {
         x = {},
         y = {},
         isFree = {}
@@ -68,7 +71,7 @@ function ManagerArrangement:new()
             height = VIRTUAL_HEIGHT - DEFAULT_SIZE_KNUCKLES[2] * 2 - 20 - 20
         },
         [ZONES.GAME_TABLO] = {  
-            x =ofsetXY,
+            x = ofsetXY,
             y = ofsetXY,
             width = VIRTUAL_WIDTH - 20 ,
             height = DEFAULT_SIZE_KNUCKLES[2]
@@ -98,6 +101,15 @@ function ManagerArrangement:initialize(handSize)
         self.discardPositions.y[i] = discardY
         self.discardPositions.isFree[i] = true
     end
+
+    local gameFieldDx = DEFAULT_SIZE_KNUCKLES[2]
+    local gameFieldY = self.zones[ZONES.GAME_FIELD].y + self.zones[ZONES.GAME_FIELD].height / 2 + DEFAULT_SIZE_KNUCKLES[1]/2  
+    for i = 0, QAUNTITY_ITEMS_GAME_FIELD - 1 do
+   
+    self.gameFieldPositions.x[i + 1] =  self.zones[ZONES.GAME_FIELD].x + i * (gameFieldDx + 10)
+    self.gameFieldPositions.y[i + 1] =  gameFieldY
+    self.gameFieldPositions.isFree =    true      
+    end 
 end
 
 -- Проверка, находится ли точка в зоне
@@ -198,6 +210,9 @@ function ManagerArrangement:debugRender()
         self.zones[ZONES.GAME_TABLO].height
     )
 
+    for i = 1, #self.gameFieldPositions.x do
+    love.graphics.circle("fill", self.gameFieldPositions.x[i], self.gameFieldPositions.y[i], 4)
+    end
     -- Восстанавливаем исходный цвет
     love.graphics.setColor(r, g, b, a)
 end

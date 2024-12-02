@@ -32,7 +32,8 @@ function Knuckle:new(id, value, radius)
     self.isMove = true
     self.isSelect = false
     self.isHover = false
-    self.up = 0 
+    self.up = 0
+    self.rotation = 0
 end
 
 --[[ Методы обновления и взаимодействия ]]
@@ -68,6 +69,10 @@ end
 --[[ Методы отрисовки ]]
 -- Основная функция отрисовки костяшки
 function Knuckle:draw()
+    love.graphics.push()
+    love.graphics.translate(self.x, self.y)
+    love.graphics.rotate(self.rotation)
+    love.graphics.translate(-self.x, -self.y)
     love.graphics.setColor(self.color[1], self.color[2], self.color[3])
     love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
     love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
@@ -80,6 +85,7 @@ function Knuckle:draw()
     self:drawPoints("down")
     self:drawShadows(self.color)
     self:hover()
+    love.graphics.pop()
 end
 
 -- Отрисовка теней костяшки

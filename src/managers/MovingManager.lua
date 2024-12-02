@@ -12,11 +12,44 @@ end
 
 function MovingManager:update(dt, objects, gameState)
     
-    if (gameState == GameStates.DISCARD) then
+    if gameState == GameStates.DISCARD then
         self:reset(dt, objects)
     end
-    if (gameState == GameStates.DEALING) then
+    if gameState == GameStates.DEALING then
         self:dealing(dt, objects)
+    end
+    if gameState == GameStates.PLAYER_TURN then
+       self:turnPositions(dt, objects)
+    end
+end
+
+
+function MovingManager:turnPositions(dt, objects)
+    local fieldIndex = 1  -- Индекс для позиций на поле
+    for i = 1, #objects do
+        if objects[i].isSelect then
+              -- Устанавливаем поворот на 90 градусов (math.pi/2 радиан)
+           objects[i].rotation = -  math.pi / 2
+
+            local dx = self.managerArrangement.gameFieldPositions.x[i] - objects[i].x
+            local dy = self.managerArrangement.gameFieldPositions.y[i] - objects[i].y
+
+            if math.abs(dx) < 1 and math.abs(dy) < 1 then
+                objects[i].isSelect = false
+            else
+                local speed = self.speed * dt
+                objects[i].x = objects[i].x + math.max(-speed, math.min(speed, dx))
+                objects[i].y = objects[i].y + math.max(-speed, math.min(speed, dy))
+            end
+            fieldIndex = fieldIndex + 1  -- Увеличиваем индекс только когда нашли выбранную костяшку
+
+        end
+    end
+    self.complete = true
+    for i = 1, #objects do
+        if objects[i].isSelect then
+            self.complete = false
+        end
     end
 
 end
@@ -46,25 +79,25 @@ function MovingManager:reset(dt, objects)
     end
 end
 
-function MovingManager:dealing(dt, knuckles)
-    for i = 1, #self.managerArrangement.handPositions.x do
-        if knuckles[i].isMove then
-            local dx = self.managerArrangement.handPositions.x[i] - knuckles[i].x
-            local dy = self.managerArrangement.handPositions.y[i] - knuckles[i].y
+function MovingManager:dealing(dt, objects)
+    for i = 1, #objects do
+        if objects[i].isMove then
+            local dx = self.managerArrangement.handPositions.x[i] - objects[i].x
+            local dy = self.managerArrangement.handPositions.y[i] - objects[i].y
 
             if math.abs(dx) < 1 and math.abs(dy) < 1 then
-                knuckles[i].isMove = false
+                objects[i].isMove = false
             else
                 local speed = self.speed * dt
-                knuckles[i].x = knuckles[i].x + math.max(-speed, math.min(speed, dx))
-                knuckles[i].y = knuckles[i].y + math.max(-speed, math.min(speed, dy))
+                objects[i].x = objects[i].x + math.max(-speed, math.min(speed, dx))
+                objects[i].y = objects[i].y + math.max(-speed, math.min(speed, dy))
             end
         end
     end
-
-    for i = 1, #knuckles do
-        self.complete = true
-        if knuckles[i].isMove then
+    self.complete = true
+    for i = 1, #objects do
+       
+        if objects[i].isMove then
             self.complete = false
         end
     end

@@ -9,7 +9,7 @@ function ManagerKnuckles:new()
   self.deck          = {}
   self.usedNumbers   = {}
   self.handDeck      = {}
-  self.resetKnucles  = {}
+  self.selectedKnucles  = {}
   self.bakside       = nil
 end
 
@@ -109,16 +109,16 @@ function ManagerKnuckles:getRandomNumber()
   return number
 end
 
-function ManagerKnuckles:removeResetKnucles()
-  for i =1, #self.resetKnucles do
+function ManagerKnuckles:removeSelectedKnucles()
+  for i =1, #self.selectedKnucles do
       for j =  #self.handDeck, 1, -1 do
-         if self.resetKnucles[i].id == self.handDeck[j].id then
+         if self.selectedKnucles[i].id == self.handDeck[j].id then
           table.remove(self.handDeck, j)
           end
       end
   end
 
-  self.resetKnucles = {}
+  self.selectedKnucles = {}
 end
 
 
