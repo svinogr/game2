@@ -27,13 +27,16 @@ function Knuckle:new(id, value, radius)
     self.v1 = value[1]
     self.v2 = value[2]
     self.radius = radius or VIRTUAL_HEIGHT/100
-    self.targetX = 0
-    self.targetY = 0
     self.isMove = true
     self.isSelect = false
     self.isHover = false
     self.up = 0
     self.rotation = 0
+    self.toPosition = {
+        id = {},
+        x ={},
+        y ={}
+    }
 end
 
 --[[ Методы обновления и взаимодействия ]]
@@ -81,7 +84,7 @@ function Knuckle:draw()
     love.graphics.line(self.x + 8, self.y + self.height/2,
                       self.x + self.width - 8, self.y + self.height/2)
     
-    self:drawPoints("up")
+   self:drawPoints("up")
     self:drawPoints("down")
     self:drawShadows(self.color)
     self:hover()

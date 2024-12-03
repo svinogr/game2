@@ -42,7 +42,6 @@ function MovingManager:turnPositions(dt, objects)
                 objects[i].y = objects[i].y + math.max(-speed, math.min(speed, dy))
             end
             fieldIndex = fieldIndex + 1  -- Увеличиваем индекс только когда нашли выбранную костяшку
-
         end
     end
     self.complete = true
@@ -51,7 +50,6 @@ function MovingManager:turnPositions(dt, objects)
             self.complete = false
         end
     end
-
 end
 
 
@@ -82,11 +80,12 @@ end
 function MovingManager:dealing(dt, objects)
     for i = 1, #objects do
         if objects[i].isMove then
-            local dx = self.managerArrangement.handPositions.x[i] - objects[i].x
-            local dy = self.managerArrangement.handPositions.y[i] - objects[i].y
-
+            local dx =  objects[i].toPosition.x - objects[i].x
+            local dy =  objects[i].toPosition.y - objects[i].y
+        print(dx..':'..dy..' i='..i..' id='..objects[i].id)
             if math.abs(dx) < 1 and math.abs(dy) < 1 then
                 objects[i].isMove = false
+              --  objects[i].positionInDeck = i
             else
                 local speed = self.speed * dt
                 objects[i].x = objects[i].x + math.max(-speed, math.min(speed, dx))
@@ -94,6 +93,7 @@ function MovingManager:dealing(dt, objects)
             end
         end
     end
+
     self.complete = true
     for i = 1, #objects do
        
@@ -101,4 +101,51 @@ function MovingManager:dealing(dt, objects)
             self.complete = false
         end
     end
+
+--[[ 
+
+    local freePosition = self.managerArrangement:getFreeHandPositions() 
+    if #objects ~= #freePosition then
+        error("несовпадение количества карт и свободных позиций")
+    end
+    for i = 1, #freePosition do
+        if objects[i].isMove then
+            local dx = freePosition.x[i] - objects[i].x
+            local dy = freePosition.y[i] - objects[i].y
+
+            if math.abs(dx) < 1 and math.abs(dy) < 1 then
+                objects[i].isMove = false
+                objects[i].positionInDeck = i
+            else
+                local speed = self.speed * dt
+                objects[i].x = objects[i].x + math.max(-speed, math.min(speed, dx))
+                objects[i].y = objects[i].y + math.max(-speed, math.min(speed, dy))
+            end
+        end
+    end ]]
+     
+
+--[[ 
+    for i = 1, #objects do
+        if objects[i].isMove then
+            local dx = self.managerArrangement.handPositions.x[i] - objects[i].x
+            local dy = self.managerArrangement.handPositions.y[i] - objects[i].y
+
+            if math.abs(dx) < 1 and math.abs(dy) < 1 then
+                objects[i].isMove = false
+                objects[i].positionInDeck = i
+            else
+                local speed = self.speed * dt
+                objects[i].x = objects[i].x + math.max(-speed, math.min(speed, dx))
+                objects[i].y = objects[i].y + math.max(-speed, math.min(speed, dy))
+            end
+        end
+    end ]]
+ --[[    self.complete = true
+    for i = 1, #objects do
+       
+        if objects[i].isMove then
+            self.complete = false
+        end
+    end ]]
 end

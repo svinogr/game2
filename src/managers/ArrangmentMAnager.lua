@@ -16,6 +16,7 @@ QAUNTITY_ITEMS_GAME_FIELD = 3 -- количество карт на игрово
 function ManagerArrangement:new()
     -- Позиции для карт в руке
     self.handPositions = {
+        id = {},
         x = {},
         y = {},
         isFree = {}  -- true если позиция свободна
@@ -23,6 +24,7 @@ function ManagerArrangement:new()
 
     -- Позиции для сброшенных карт
     self.discardPositions = {
+        id = {},
         x = {},
         y = {},
         isFree = {}
@@ -30,6 +32,7 @@ function ManagerArrangement:new()
 
     -- позиции для выложеных карт
     self.gameFieldPositions = {
+        id = {},
         x = {},
         y = {},
         isFree = {}
@@ -87,6 +90,7 @@ function ManagerArrangement:initialize(handSize)
     local y = self.zones[ZONES.HAND].y
 
     for i = 1, handSize do
+        self.handPositions.id[i] = i
         self.handPositions.x[i] = startX + (i-1) * (cardWidth + spacing)
         self.handPositions.y[i] = y
         self.handPositions.isFree[i] = true
@@ -119,15 +123,35 @@ function ManagerArrangement:isInZone(x, y, zone)
            y >= z.y and y <= z.y + z.height
 end
 
--- Получить свободную позицию в руке
-function ManagerArrangement:getFreeHandPosition()
-    for i = 1, #self.handPositions.isFree do
+-- Получить свободные позиции в руке 
+function ManagerArrangement:getFreeHandPositions()
+    local freePosition = {}
+    for i = 1, #self.handPositions.id do
         if self.handPositions.isFree[i] then
-            return i
+            local position = {
+                id = self.handPositions.id[i],
+                x = self.handPositions.x[i],
+                y = self.handPositions.y[i],
+            }
+            -- ЗДЕСЬ МЫ СРАЗУ СТАВИМ ЧТО ПОЗИЦИЯ ОТДАНА
+            self.handPositions.isFree[i] = false
+            table.insert(freePosition, position)
         end
     end
-    return nil
+    return freePosition
 end
+
+function ManagerArrangement:clearHandPositions(knuckles)
+    for i = 1, #knuckles do
+       for j = 1, #self.handPositions.id do
+       if (knuckles[i].toPosition.id == self.handPositions.id[j]) then
+            self.handPositions.isFree[j] = true
+       end
+    end
+    end
+end
+
+
 
 -- Получить свободную позицию в зоне сброса
 function ManagerArrangement:getFreeDiscardPosition()
@@ -139,7 +163,7 @@ function ManagerArrangement:getFreeDiscardPosition()
     return nil
 end
 
--- Занять позицию в руке
+--[[ -- Занять позицию в руке
 function ManagerArrangement:occupyHandPosition(index)
     if index and self.handPositions.isFree[index] then
         self.handPositions.isFree[index] = false
@@ -147,16 +171,16 @@ function ManagerArrangement:occupyHandPosition(index)
     end
     return false
 end
-
+ ]]
 -- Освободить позицию в руке
-function ManagerArrangement:freeHandPosition(index)
+--[[ function ManagerArrangement:freeHandPosition(index)
     if index and not self.handPositions.isFree[index] then
         self.handPositions.isFree[index] = true
         return true
     end
     return false
 end
-
+ ]]
 -- Отрисовка зон (для отладки)
 function ManagerArrangement:debugRender()
     -- Сохраняем текущий цвет

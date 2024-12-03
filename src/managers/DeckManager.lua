@@ -25,7 +25,7 @@ function DeckManager:getRandomNumber()
     return number
   end
   
-  function ManagerKnuckles:createDeck()
+  function KnucklesManager:createDeck()
     local index = 1
     for i = 1, 6 do
       for j = 1, 6 do

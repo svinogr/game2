@@ -8,7 +8,7 @@ require "Knuckle"
 function GameManager:new()
     self.managerButtons = ManagerButtons()
 
-    self.managerKnucle = ManagerKnuckles()
+    self.managerKnucle = KnucklesManager()
     self.managerKnucle:initialize()
 
     self.managerArrangment = ManagerArrangment(5, self.managerButtons, self.managerKnucle)
