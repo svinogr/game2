@@ -72,8 +72,10 @@ end
 --[[ Методы отрисовки ]]
 -- Основная функция отрисовки костяшки
 function Knuckle:draw()
+    local scale = self.scale or 1  -- Используем scale если есть, иначе 1
     love.graphics.push()
     love.graphics.translate(self.x, self.y)
+    love.graphics.scale(scale, scale)
     love.graphics.rotate(self.rotation)
     love.graphics.translate(-self.x, -self.y)
     love.graphics.setColor(self.color[1], self.color[2], self.color[3])
