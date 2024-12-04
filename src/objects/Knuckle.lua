@@ -75,8 +75,9 @@ function Knuckle:draw()
     local scale = self.scale or 1  -- Используем scale если есть, иначе 1
     love.graphics.push()
     love.graphics.translate(self.x, self.y)
-    love.graphics.scale(scale, scale)
+   
     love.graphics.rotate(self.rotation)
+    love.graphics.scale(scale, scale)
     love.graphics.translate(-self.x, -self.y)
     love.graphics.setColor(self.color[1], self.color[2], self.color[3])
     love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
@@ -228,5 +229,10 @@ end
 -- Снятие подсветки
 function Knuckle:unhighlight()
     self.color = DEFAULT_COLOR_KNUCKLE
+end
+
+function Knuckle:print()
+    love.graphics.print(self.v1, self.v2)
+    
 end
 

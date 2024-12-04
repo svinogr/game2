@@ -7,6 +7,7 @@ require "src.managers.ArrangmentManager"
 require "src.managers.ButtonsManager"
 require "src.managers.MovingManager"
 require "src.managers.ScoreManager"
+require "src.states.CombinationStates"
 
 -- Состояния игры
 GameStates = {
@@ -22,7 +23,7 @@ PlayState = BaseState:extend()
 --[[ Инициализация состояния игры ]]
 function PlayState:new()
     local countKnucles = 5 -- Количество костяшек в руке/ все начальные перемнные перенсети в ентер
-    local scoreStart = 100    
+    local scoreStart = 100
 
     -- Создание основных игровых менеджеров
     self.backSideKnucle = BackSide(DEFAULT_SIZE_KNUCKLES, DEFAULT_START_POSITION_KNUCKLES)
@@ -31,15 +32,15 @@ function PlayState:new()
 
     self.scoreManager = ScoreManager()
     self.scoreManager:initialize(scoreStart, self.arrangement)
-    
+
     self.dealingManager = DealingManager()
-    
+
     self.knucklesManager = KnucklesManager()
     self.knucklesManager:initialize()
 
     self.movingManager = MovingManager()
     self.movingManager:initialize(self.arrangement)
-   
+
     --self.dealingManager:initialize(self.arrangement, self.knucklesManager)
     self.buttonsManager = ManagerButtons()
     self.buttonsManager:initialize(self.arrangement)
@@ -51,6 +52,10 @@ function PlayState:new()
     -- Установка начального состояния
     self.currentState = GameStates.DEALING
 
+    --комбинации 
+    self.combinations = {}
+    self.stateCombination = Combinations()
+
     -- Флаги для отладки
     self.debugMode = true
 end
@@ -59,43 +64,26 @@ end
 function PlayState:update(dt)
     -- Обработка состояния раздачи
     if self.currentState == GameStates.DEALING then
-       -- print("DEALING")
-        -- получаем нужное количество случайных карт (5)
-      --  local freeHandPositions = self.arrangement:getFreeHandPositions()
-
-       -- local knucles = self.knucklesManager:dealingKnucles(freeHandPositions)
-        
-        
-        
-       -- self.movingManager:update(dt, GameStates.DEALING)
-
-       -- if self.movingManager.complete then
-         --   self.currentState = GameStates.PLAYER_THINK
-       -- end
+               -- ролучаем свободные позиции
+        local freeHandPositions = self.arrangement:getFreeHandPositions()
+        local knucles = nil
+        if #freeHandPositions == 0 then
+            knucles = self.knucklesManager.handDeck
+        else
+            -- получить карты по количеству свободных позиций
+            knucles = self.knucklesManager:getRandomKnucles(#freeHandPositions)
+            -- назначить карты в свободные позиции
+            self.knucklesManager:addKnucklesToHandDeck(knucles, freeHandPositions)
+        end
 
 
-          -- ролучаем свободные позиции
-          local freeHandPositions = self.arrangement:getFreeHandPositions()
-          local knucles = nil
-          if #freeHandPositions == 0 then
-             knucles = self.knucklesManager.handDeck
-            else    
-               -- получить карты по количеству свободных позиций
-               knucles = self.knucklesManager:getRandomKnucles(#freeHandPositions)
-                -- назначить карты в свободные позиции
-              self.knucklesManager:addKnucklesToHandDeck(knucles, freeHandPositions)
-          end
 
-          
-        
-          -- переместить карты на нужную позицию
-          self.movingManager:update(dt, knucles, GameStates.DEALING )
-          -- изменить состояние
-          if self.movingManager.complete then
+        -- переместить карты на нужную позицию
+        self.movingManager:update(dt, knucles, GameStates.DEALING)
+        -- изменить состояние
+        if self.movingManager.complete then
             self.currentState = GameStates.PLAYER_THINK
-          end
-
-
+        end
     end
 
     -- Обработка состояния размышления игрока
@@ -112,8 +100,11 @@ function PlayState:update(dt)
             if love.mouse.isDown(1) and love.keyboard.mouseWasPressedOn(self.knucklesManager.handDeck[i]) then
                 print("mousepressed")
                 self.knucklesManager.handDeck[i]:select()
+                self.knucklesManager:addKnucklesToSelected(self.knucklesManager.handDeck[i])
             end
         end
+
+       
 
         for i = 1, #self.buttons do
             if love.keyboard.hover(self.buttons[i]) then
@@ -127,12 +118,6 @@ function PlayState:update(dt)
                 print("mousepressed")
                 self.buttons[i]:select()
 
-                for i = 1, #self.knucklesManager.handDeck do
-                    if self.knucklesManager.handDeck[i].isSelect then
-                        table.insert(self.knucklesManager.selectedKnucles, self.knucklesManager.handDeck[i])
-                    end
-                end
-
                 if self.buttons[i].text == ButtonsTitle.RESET and #self.knucklesManager.selectedKnucles > 0 then
                     self.currentState = GameStates.DISCARD
                 elseif self.buttons[i].text == ButtonsTitle.TURN and #self.knucklesManager.selectedKnucles > 0 then
@@ -142,17 +127,23 @@ function PlayState:update(dt)
                 self.buttons[i].isHover = false
             end
         end
+        
+        print("selectede "..#self.knucklesManager.selectedKnucles)
+        if #self.knucklesManager.selectedKnucles > 1 then
+            self.stateCombination:check(self.knucklesManager.selectedKnucles)
+            self.combinations = self.stateCombination.combinations
+        end
+
     end
 
     if self.currentState == GameStates.DISCARD then
         print("DISCARD")
         self.movingManager:update(dt, self.knucklesManager.selectedKnucles, GameStates.DISCARD)
-          if self.movingManager.complete then
+        if self.movingManager.complete then
             print("change state")
             self.currentState = GameStates.DEALING
             self.arrangement:clearHandPositions(self.knucklesManager.selectedKnucles)
             self.knucklesManager:removeSelectedKnucles()
-            
         end
     end
 
@@ -160,15 +151,15 @@ function PlayState:update(dt)
         print("PLAYER_TURN")
         self.movingManager:update(dt, self.knucklesManager.selectedKnucles, GameStates.PLAYER_TURN)
         if self.movingManager.complete then
-          print("change state")
-         self.currentState = GameStates.SCORING
-    
-         --- self.knucklesManager:removeSelectedKnucles() перенести в scoring
-      end
+            print("change state")
+            self.currentState = GameStates.SCORING
+
+            --- self.knucklesManager:removeSelectedKnucles() перенести в scoring
+        end
     end
 
 
-     if self.currentState == GameStates.SCORING then
+    if self.currentState == GameStates.SCORING then
         print("SCORING")
         self.scoreManager:update(dt, self.knucklesManager.selectedKnucles, GameStates.SCORING)
 
@@ -176,16 +167,14 @@ function PlayState:update(dt)
             print("change state")
             self.arrangement:clearHandPositions(self.knucklesManager.selectedKnucles)
             self.knucklesManager:removeSelectedKnucles()
-       
+
             self.currentState = GameStates.DEALING
         end
     end
-
 end
 
 --[[ Отрисовка игрового состояния ]]
 function PlayState:render()
-
     -- Отрисовка фона
     love.graphics.setColor(0.5, 0.5, 0.5)
     love.graphics.rectangle('fill', 0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT)
@@ -194,25 +183,28 @@ function PlayState:render()
 
     -- Отрисовка игрового стола
     self:drawTable()
-   -- отрисовка табло очков    
-       self.scoreManager:render()
+    -- отрисовка табло очков
+    self.scoreManager:render()
     -- Отрисовка рубашки костяшек
     self.backSideKnucle:draw(DEFAULT_COLOR_BACKSIDE)
-   
+
 
     -- Отрисовка кнопок
     if self.buttonsManager then
         self.buttonsManager:draw()
     end
-       -- Отрисовка костяшек в руке
-     for _, knuckle in ipairs(self.knucklesManager.handDeck) do
+    -- Отрисовка костяшек в руке
+    for _, knuckle in ipairs(self.knucklesManager.handDeck) do
         knuckle:draw(DEFAULT_COLOR_KNUCKLE)
     end
-      -- Отрисовка отладочной информации
-      if self.debugMode then
+
+    -- отрисовка комбинаций
+     self:drawCombinations() 
+
+    -- Отрисовка отладочной информации
+    if self.debugMode then
         self.arrangement:debugRender()
     end
-
 end
 
 --[[ Вспомогательные методы ]]
@@ -258,4 +250,15 @@ function PlayState:mousereleased(x, y, button)
     end
 end
 
+function PlayState:drawCombinations()
+    x = VIRTUAL_WIDTH / 2
+    y = VIRTUAL_HEIGHT / 2
+    for i = 1, #self.combinations do
+         local combo = self.combinations[i] 
+         
+        for j = 1, #combo do
 
+        love.graphics.print(combo[j].v1, x  , y )
+        end
+    end
+end

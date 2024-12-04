@@ -77,6 +77,37 @@ function KnucklesManager:addKnucklesToHandDeck(knuckles,freePositions)
   end 
 end
 
+function KnucklesManager:addKnucklesToSelected(knuckles)
+
+     if knuckles.isSelect then
+      local wasNotAddedToSelected = true
+      for i = 1, #self.selectedKnucles do
+        if self.selectedKnucles[i].id == knuckles.id then
+          wasNotAddedToSelected = false
+          break
+        end
+      end
+      if wasNotAddedToSelected then
+         table.insert(self.selectedKnucles, knuckles)         
+      end
+
+     else
+      for i = 1, #self.selectedKnucles do
+        if self.selectedKnucles[i].id == knuckles.id then
+          table.remove(self.selectedKnucles, i)
+          break
+        end
+    end
+     
+
+     end
+
+end
+
+
+
+
+
 
 function KnucklesManager: dealingKnucles(freePositions)
  --[[   if #self.handDeck < quantity then
