@@ -1,3 +1,4 @@
+Object = require "src.lib.classic"
 COMBINATION_STATES = {
     NONE = {},
     ONE_PAIR = {},
@@ -13,66 +14,125 @@ Combinations = Object:extend()
 
 function Combinations:new()
     self.combinations = {}
+    self.visualCombinations = {}
 end
 
 function Combinations:check(cards)
-    self:getPermutations(cards)
-end
-
-function Combinations:getPermutations(cards)
-    local qCicles = {}
-
-    -- Определяем количество циклов
-    for i = 1, #cards do
-        table.insert(qCicles, true)
+    if #cards < 3 then
+        self.combinations = {}
+        return
     end
 
-    for i = 1, #cards do
-        for j = 1, #cards do
-            if j ~= i then
-                if qCicles[3] ~= nil then
-                    for k = 1, #cards do
-                        if k ~= i and k ~= j then -- Исключаем повторение
-                            -- Формируем строку комбинации и добавляем в результирующую таблицу
-                            table.insert(self.combinations, { cards[i], cards[j], cards[k] })
-                        end
-                    end
+    self:generateCombinations(cards)
+    self:combinationToVisualType()
 
-                    else 
-                        table.insert(self.combinations, { cards[i], cards[j]})
-                end
-                
+    return self.combinations
+end
+
+function Combinations:generateCombinations(objects)
+    local valuesCards = {}
+    -- получаем все значения карт
+    for i = 1, #objects do
+        valuesCards[i] = { objects[i].v1, objects[i].v2 }
+    end
+
+    -- получаем все варианты комбинаций из первых ДВУХ
+    local twoValues = {}
+    for i = 1, #valuesCards - 1 do
+        for j = 1, #valuesCards - 1 do
+            if i ~= j then
+                table.insert(twoValues, {valuesCards[i], valuesCards[j]})
+                table.insert(twoValues, {self:swap(valuesCards[i]),self:swap(valuesCards[j])})
             end
         end
     end
 
+    local oneValues = {}
+    for i = 3, #valuesCards do
+        table.insert(oneValues, {valuesCards[i]})
+        table.insert(oneValues, {self:swap(valuesCards[i])})
+    end
+      
+    local merged = {}
+    for i = 1, #twoValues do
+        for j = 1, #oneValues do
+            table.insert(merged, {twoValues[i][1], twoValues[i][2], oneValues[j][1]})
+            table.insert(merged, {twoValues[i][1],  oneValues[j][1], twoValues[i][2]})
+            table.insert(merged, {oneValues[j][1], twoValues[i][1],  twoValues[i][2]})
+        end
+    end
+    self.combinations = merged
+    print("Всего комбинаций: " .. #self.combinations .. " (должно быть 24)")
+    return self.combinations
+end
 
+function Combinations:copy(combination)
+    local copy = {}
+    for i, v in ipairs(combination) do
+        copy[i] = v
+    end
+    return copy
+end
 
+function Combinations:swap(val)
+    return { val[2], val[1] }
+end
 
+function Combinations:combinationToVisualType()
+    self.visualCombinations = {}
+    local onePairCombinations = {}
 
+    for i = 1, #self.combinations do
+        -- есть комбинация [1-4] [5-5] [6-4]
+        local combination = self.combinations[i]
+        local pairs = self:checkOnePair(combination)
+        if pairs then
+            table.insert(onePairCombinations, pairs)
+        end
+        self:checkSimpleStraight(combination)
+        self:checkChainStraight(combination)
+        self:checkFullStraight(combination)
+    end
+end
 
+function Combinations:checkOnePair(combination)
+    -- Список совместимых пар
+    local compatiblePairs = {}
 
---[[ 
-    for i = 1, #cards do
-        for j = 1, #cards do
-            if j ~= i then                    -- Исключаем повторение
-                for k = 1, #cards do
-                    if k ~= i and k ~= j then -- Исключаем повторение
-                        -- Формируем строку комбинации и добавляем в результирующую таблицу
-                        table.insert(self.combinations, { cards[i], cards[j], cards[k] })
-                    end
+    -- Проверяем каждую пару на совместимость
+    -- Две пары совместимы, если последняя цифра первой пары
+    -- равна первой цифре второй пары
+    for i = 1, #combination -1 do
+        for j = i + 1, #combination do
+            if j - i == 1 then -- Пропускаем проверку одной и той же пары
+                if self:areCompatible(combination[i], combination[j]) then
+                    table.insert(compatiblePairs, combination)
                 end
             end
         end
-    end ]]
+    end
+    print(#compatiblePairs)
+
+    -- Возвращаем nil если нет совместимых пар
+    if #compatiblePairs == 0 then
+        return nil
+    end
+    return compatiblePairs
 end
 
-function Combinations:print()
-    -- love.graphics.setFont(love.graphics.newFont(20)) -- Устанавливаем размер шрифта
-        for i, combo in ipairs(self.combinations) do                
-    --[[     love.graphics.print("Комбинация " .. i .. ": {" .. combo[1].v1 .. "-" .. combo[2].v1 .. combo[3].v1 .. "}", 50,
-            50 * i) ]]
-love.graphics.print("Комбинация ")
-              combo[1]:print()  
-    end
+function Combinations:areCompatible(pair1, pair2)
+    -- Проверяем, равна ли последняя цифра первой пары первой цифре второй пары
+    return pair1[2] == pair2[1]
+end
+
+function Combinations:checkSimpleStraight(inerComb)
+
+end
+
+function Combinations:checkChainStraight(inerComb)
+
+end
+
+function Combinations:checkFullStraight(inerComb)
+
 end

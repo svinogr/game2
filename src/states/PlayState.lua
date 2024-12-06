@@ -52,9 +52,7 @@ function PlayState:new()
     -- Установка начального состояния
     self.currentState = GameStates.DEALING
 
-    --комбинации 
-    self.combinations = {}
-    self.stateCombination = Combinations()
+
 
     -- Флаги для отладки
     self.debugMode = true
@@ -64,7 +62,7 @@ end
 function PlayState:update(dt)
     -- Обработка состояния раздачи
     if self.currentState == GameStates.DEALING then
-               -- ролучаем свободные позиции
+        -- ролучаем свободные позиции
         local freeHandPositions = self.arrangement:getFreeHandPositions()
         local knucles = nil
         if #freeHandPositions == 0 then
@@ -104,7 +102,7 @@ function PlayState:update(dt)
             end
         end
 
-       
+
 
         for i = 1, #self.buttons do
             if love.keyboard.hover(self.buttons[i]) then
@@ -127,12 +125,20 @@ function PlayState:update(dt)
                 self.buttons[i].isHover = false
             end
         end
-        
-        print("selectede "..#self.knucklesManager.selectedKnucles)
-        if #self.knucklesManager.selectedKnucles > 1 then
-            self.stateCombination:check(self.knucklesManager.selectedKnucles)
-            self.combinations = self.stateCombination.combinations
+
+        print("selectede " .. #self.knucklesManager.selectedKnucles)
+        self.scoreManager:update(dt, self.knucklesManager.selectedKnucles, GameStates.PLAYER_THINK)
+        if self.scoreManager.complete then
+            for i = 1, #self.scoreManager.combinations do
+                print(""..i.."|"..self.scoreManager.combinations[i][1][1].."-"..
+                self.scoreManager.combinations[i][1][2].."|".. 
+                self.scoreManager.combinations[i][2][1].."-".. 
+                self.scoreManager.combinations[i][2][2].."|".. 
+                self.scoreManager.combinations[i][3][1].."-".. 
+                self.scoreManager.combinations[i][3][2].."|")
+            end
         end
+        self.scoreManager.complete = false
 
     end
 
@@ -198,9 +204,6 @@ function PlayState:render()
         knuckle:draw(DEFAULT_COLOR_KNUCKLE)
     end
 
-    -- отрисовка комбинаций
-     self:drawCombinations() 
-
     -- Отрисовка отладочной информации
     if self.debugMode then
         self.arrangement:debugRender()
@@ -250,15 +253,20 @@ function PlayState:mousereleased(x, y, button)
     end
 end
 
-function PlayState:drawCombinations()
+--[[ function PlayState:drawCombinations()
     x = VIRTUAL_WIDTH / 2
     y = VIRTUAL_HEIGHT / 2
+     local str = ""
     for i = 1, #self.combinations do
-         local combo = self.combinations[i] 
-         
-        for j = 1, #combo do
+         local combo = self.combinations[i]
 
-        love.graphics.print(combo[j].v1, x  , y )
+        for j = 1, #combo do
+            str = str..combo[j].v1.."-"..combo[j].v2.."_"
+
         end
+
+
     end
+    love.graphics.print(str, x, y)
 end
+ ]]
