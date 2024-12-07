@@ -30,6 +30,7 @@ function Combinations:check(cards)
 end
 
 function Combinations:generateCombinations(objects)
+    self.combinations = {}
     local valuesCards = {}
     -- получаем все значения карт
     for i = 1, #objects do
@@ -87,7 +88,7 @@ function Combinations:combinationToVisualType()
         local combination = self.combinations[i]
         local pairs = self:checkOnePair(combination)
         if pairs then
-            table.insert(onePairCombinations, pairs)
+            table.insert(onePairCombinations, combination)
         end
         self:checkSimpleStraight(combination)
         self:checkChainStraight(combination)
@@ -96,28 +97,11 @@ function Combinations:combinationToVisualType()
 end
 
 function Combinations:checkOnePair(combination)
-    -- Список совместимых пар
-    local compatiblePairs = {}
-
-    -- Проверяем каждую пару на совместимость
-    -- Две пары совместимы, если последняя цифра первой пары
-    -- равна первой цифре второй пары
-    for i = 1, #combination -1 do
-        for j = i + 1, #combination do
-            if j - i == 1 then -- Пропускаем проверку одной и той же пары
-                if self:areCompatible(combination[i], combination[j]) then
-                    table.insert(compatiblePairs, combination)
-                end
-            end
-        end
-    end
-    print(#compatiblePairs)
-
-    -- Возвращаем nil если нет совместимых пар
-    if #compatiblePairs == 0 then
-        return nil
-    end
-    return compatiblePairs
+    if combination[1][2] == combination[2][1] or combination[2][2] == combination[3][1] then
+       return true
+    end    
+   return false
+ 
 end
 
 function Combinations:areCompatible(pair1, pair2)
