@@ -1,6 +1,6 @@
  require "src.states.CombinationStates"
  luaunit = require "tests.luaunit.luaunit"
- local combinations = Combinations()
+ local combinations = CombinationsStates()
 
 function testCheckFlush()
     assert(combinations:checkFlush({{1, 1}, {2, 1}, {3, 1}}) == false, "Test 1 Failed")

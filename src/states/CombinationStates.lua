@@ -1,32 +1,38 @@
-Object = require "src.lib.classic"
-COMBINATION_STATES = {
-    NONE = {},            -- просто наибольшая костяшка
-    ONE_PAIR = {},        -- подряд две. одна за другой
-    THREE_OF_A_KIND = {}, -- подряд три. без возрастания или убывания,
-    SIMPLE_STRAIGHT = {}, -- подряд три с возрастанием или убыванием БЕЗ СЦЕПКИ
-    STRAIGHT = {},        -- подряд три с возрастанием или убыванием
-    FLUSH = {},           -- три одинаковых
-}
-Combinations = Object:extend()
 
-function Combinations:new()
+require "src.states.combination.Combination"
+
+
+CombinationsStates = Object:extend()
+
+function CombinationsStates:new()
+    self.addedVisualCombinations = {}
+    self:addStateCombinations()
+
+self.visualCombinations = {}
+
     self.combinations = {}
-    self.visualCombinations = {}
 end
 
-function Combinations:check(cards)
-    if #cards < 3 then
-        self.combinations = {}
-        return
-    end
-
+function CombinationsStates:check(cards)
+    -- генерируем все возможные комбинации
     self:generateCombinations(cards)
+    -- создаем обьекты для визуального отоброжаения из комбинаций
     self:combinationToVisualType()
 
-    return self.combinations
+    return self.visualCombinations
 end
 
-function Combinations:generateCombinations(objects)
+
+function CombinationsStates:addStateCombinations()
+        table.insert(self.addedVisualCombinations, OnePair())
+        table.insert(self.addedVisualCombinations, ThreeOfKind())
+        table.insert(self.addedVisualCombinations, SimpleStraight())
+        table.insert(self.addedVisualCombinations, Flush())
+        table.insert(self.addedVisualCombinations, Straight()) 
+end
+
+
+function CombinationsStates:generateCombinations(objects)
     self.combinations = {}
     local valuesCards = {}
     -- получаем все значения карт
@@ -61,10 +67,9 @@ function Combinations:generateCombinations(objects)
     end
     self.combinations = merged
     print("Всего комбинаций: " .. #self.combinations .. " (должно быть 24)")
-    return self.combinations
 end
 
-function Combinations:copy(combination)
+function CombinationsStates:copy(combination)
     local copy = {}
     for i, v in ipairs(combination) do
         copy[i] = v
@@ -72,83 +77,45 @@ function Combinations:copy(combination)
     return copy
 end
 
-function Combinations:swap(val)
+function CombinationsStates:swap(val)
     return { val[2], val[1] }
 end
 
-function Combinations:combinationToVisualType()
+function CombinationsStates:multiplicationResult(combination)
+return combination[1][1] * combination[1][2] + combination[2][1] * combination[2][2] + combination[3][1] * combination[3][2]
+end
+
+function CombinationsStates:combinationToVisualType()
+    -- сброс комбинаций
+      self:resetCombinations()
+       -- идем по заложеным комбинациям игры 
+       for index, value in ipairs(self.addedVisualCombinations) do
+          
+            -- идем по полученым комбинациям
+                for i = 1, #self.combinations do
+                     -- считаем мультипликацию комбинации
+                        local multiplication = self:multiplicationResult(self.combinations[i])
+                    if value:check(self.combinations[i]) then                         
+                        if value.curentCombinationValues < multiplication then
+                            value.curentCombinationValues = multiplication 
+                        end
+                    end
+                end
+       end
+
+         for i = 1,  #self.addedVisualCombinations do
+            if self.addedVisualCombinations[i].curentCombinationValues > 0 then
+                table.insert(self.visualCombinations, self.addedVisualCombinations[i])
+            end
+         end
+
+          
+end
+
+function CombinationsStates:resetCombinations()
+    for index, value in ipairs(self.addedVisualCombinations) do
+        value.curentCombinationValues = 0
+    end
+
     self.visualCombinations = {}
-    local onePairCombinations = {}
-
-    for i = 1, #self.combinations do
-        -- есть комбинация [1-4] [5-5] [6-4]
-        local combination = self.combinations[i]
-        local pairs = self:checkOnePair(combination)
-        if pairs then
-            table.insert(onePairCombinations, combination)
-        end
-
-        self:checkSimpleStraight(combination)
-        self:checkChainStraight(combination)
-        self:checkFlush(combination)
-    end
-end
-
---ONE_PAIR = {}, -- подряд две. одна за другой
-function Combinations:checkOnePair(combination)
-    return combination[1][2] == combination[2][1] or combination[2][2] == combination[3][1]
-end
-
--- SIMPLE_STRAIGHT = {}, -- подряд три с возрастанием или убыванием БЕЗ СЦЕПКИ
-function Combinations:checkSimpleStraight(combination)
-    return combination[2][1] - combination[1][2] == 1 and combination[3][1] - combination[2][2] == 1
-end
-
---  THREE_OF_A_KIND = {}, -- подряд три. без возрастания или убывания,
-function Combinations:checkThreeOfAKind(combination)
-    return combination[1][2] == combination[2][1] and combination[2][2] == combination[3][1]
-end
-
--- STRAIGHT = {}, -- подряд три с возрастанием или убыванием
-function Combinations:checkChainStraight(combination)
-    local rez = false
-
-    if combination[1][2] - combination[1][1] == 1 and combination[2][2] - combination[2][1] == 1 and combination[3][2] - combination[3][1] == 1 then
-                rez = true
-    end
-
-    if rez then
-        rez = combination[1][2] == combination[2][1] and combination[2][2] == combination[3][1]
-    end
-
-    return rez
-end
-
--- FLUSH = {}, -- три одинаковых
-function Combinations:checkFlush(combination)
-    local rez = false
-    local curValue = combination[1][1]
-
-    if curValue == combination[1][2] then
-        rez = true
-    else
-        rez = false
-        return rez
-    end
-
-    if curValue == combination[2][1] and curValue == combination[2][2] then
-        rez = true
-    else
-        rez = false
-        return rez
-    end
-
-    if curValue == combination[3][1] and curValue == combination[3][2] then
-        rez = true
-    else
-        rez = false
-        return rez
-    end
-
-    return rez
 end

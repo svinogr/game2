@@ -99,9 +99,10 @@ function PlayState:update(dt)
                 print("mousepressed")
                 self.knucklesManager.handDeck[i]:select()
                 self.knucklesManager:addKnucklesToSelected(self.knucklesManager.handDeck[i])
+
+                self.scoreManager.complete = false
             end
         end
-
 
 
         for i = 1, #self.buttons do
@@ -127,10 +128,13 @@ function PlayState:update(dt)
         end
 
         print("selectede " .. #self.knucklesManager.selectedKnucles)
+        if not self.scoreManager.complete then
         self.scoreManager:update(dt, self.knucklesManager.selectedKnucles, GameStates.PLAYER_THINK)
-        if self.scoreManager.complete then
+        end
+  --[[       
+   if self.scoreManager.complete then
             for i = 1, #self.scoreManager.combinations do
-                print(""..i.."|"..self.scoreManager.combinations[i][1][1].."-"..
+              print(""..i.."|"..self.scoreManager.combinations[i][1][1].."-"..
                 self.scoreManager.combinations[i][1][2].."|".. 
                 self.scoreManager.combinations[i][2][1].."-".. 
                 self.scoreManager.combinations[i][2][2].."|".. 
@@ -138,7 +142,7 @@ function PlayState:update(dt)
                 self.scoreManager.combinations[i][3][2].."|")
             end
         end
-        self.scoreManager.complete = false
+        self.scoreManager.complete = false ]]
 
     end
 
@@ -208,6 +212,10 @@ function PlayState:render()
     if self.debugMode then
         self.arrangement:debugRender()
     end
+   -- Отрисовка табло очков
+    self.scoreManager:render()
+
+
 end
 
 --[[ Вспомогательные методы ]]

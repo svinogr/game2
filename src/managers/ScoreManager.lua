@@ -9,7 +9,7 @@ end
 
 function ScoreManager:initialize(score, arrangement)
     --комбинации
-    self.stateCombination = Combinations()
+    self.stateCombination = CombinationsStates()
     self.combinations = {}
     self.arrangement = arrangement
 
@@ -26,7 +26,7 @@ function ScoreManager:update(dt, selectedKnucles, gameState)
             self.combinations = {}
             return
         end
-
+        self.combinations = {} 
         self:checkVariantCombinations(selectedKnucles)
     end
 
@@ -38,29 +38,39 @@ function ScoreManager:update(dt, selectedKnucles, gameState)
 end
 
 function ScoreManager:render()
+   -- отрисовака окна очков
+
     self.tabloScore:draw()
-    if #self.combinations > 2 then
+
+    -- отрисовка возможных комбинаций
+    if #self.combinations > 0 then
         self:drawVariantCombinations()
     end
+  --  self.combinations = {}
 end
 
 function ScoreManager:checkVariantCombinations(knuckles)
-    self.combinations = {}
+    
+    if #knuckles  ~= 3 then  
+        self.combinations = {}
+        return
+    end
 
     self.combinations = self.stateCombination:check(knuckles)
 end
 
 function ScoreManager:drawVariantCombinations()
-    if #self.combinations > 2 then
+
         local x = VIRTUAL_WIDTH / 2 - 150
         local y = VIRTUAL_HEIGHT / 2 - 15
 
-        love.graphics.rectangle("line", x, y, 300, 30)
+        love.graphics.rectangle("line", x, y, 300, 30) -- заменить на arrangement
         local str = "Комбинации: "
         for i, combination in ipairs(self.combinations) do
-            str = str..tostring(combination[1].v1)
-            
+            o = true
+            love.graphics.print(combination.visualName(), 300 + i*60, 30)         
         end
-        love.graphics.print(str, x + 10, y)
-    end
+
+        
+
 end
