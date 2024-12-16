@@ -1,14 +1,11 @@
 Object = require "src.lib.classic"
 COMBINATION_STATES = {
-    NONE = {},
-    ONE_PAIR = {},
-    TWO_PAIRS = {},
-    THREE_OF_A_KIND = {},
-    STRAIGHT = {},
-    FLUSH = {},
-    FULL_HOUSE = {},
-    FOUR_OF_A_KIND = {},
-    STRAIGHT_FLUSH = {}
+    NONE = {},            -- просто наибольшая костяшка
+    ONE_PAIR = {},        -- подряд две. одна за другой
+    THREE_OF_A_KIND = {}, -- подряд три. без возрастания или убывания,
+    SIMPLE_STRAIGHT = {}, -- подряд три с возрастанием или убыванием БЕЗ СЦЕПКИ
+    STRAIGHT = {},        -- подряд три с возрастанием или убыванием
+    FLUSH = {},           -- три одинаковых
 }
 Combinations = Object:extend()
 
@@ -42,24 +39,24 @@ function Combinations:generateCombinations(objects)
     for i = 1, #valuesCards - 1 do
         for j = 1, #valuesCards - 1 do
             if i ~= j then
-                table.insert(twoValues, {valuesCards[i], valuesCards[j]})
-                table.insert(twoValues, {self:swap(valuesCards[i]),self:swap(valuesCards[j])})
+                table.insert(twoValues, { valuesCards[i], valuesCards[j] })
+                table.insert(twoValues, { self:swap(valuesCards[i]), self:swap(valuesCards[j]) })
             end
         end
     end
 
     local oneValues = {}
     for i = 3, #valuesCards do
-        table.insert(oneValues, {valuesCards[i]})
-        table.insert(oneValues, {self:swap(valuesCards[i])})
+        table.insert(oneValues, { valuesCards[i] })
+        table.insert(oneValues, { self:swap(valuesCards[i]) })
     end
-      
+
     local merged = {}
     for i = 1, #twoValues do
         for j = 1, #oneValues do
-            table.insert(merged, {twoValues[i][1], twoValues[i][2], oneValues[j][1]})
-            table.insert(merged, {twoValues[i][1],  oneValues[j][1], twoValues[i][2]})
-            table.insert(merged, {oneValues[j][1], twoValues[i][1],  twoValues[i][2]})
+            table.insert(merged, { twoValues[i][1], twoValues[i][2], oneValues[j][1] })
+            table.insert(merged, { twoValues[i][1], oneValues[j][1], twoValues[i][2] })
+            table.insert(merged, { oneValues[j][1], twoValues[i][1], twoValues[i][2] })
         end
     end
     self.combinations = merged
@@ -90,33 +87,68 @@ function Combinations:combinationToVisualType()
         if pairs then
             table.insert(onePairCombinations, combination)
         end
+
         self:checkSimpleStraight(combination)
         self:checkChainStraight(combination)
-        self:checkFullStraight(combination)
+        self:checkFlush(combination)
     end
 end
 
+--ONE_PAIR = {}, -- подряд две. одна за другой
 function Combinations:checkOnePair(combination)
-    if combination[1][2] == combination[2][1] or combination[2][2] == combination[3][1] then
-       return true
-    end    
-   return false
- 
+    return combination[1][2] == combination[2][1] or combination[2][2] == combination[3][1]
 end
 
-function Combinations:areCompatible(pair1, pair2)
-    -- Проверяем, равна ли последняя цифра первой пары первой цифре второй пары
-    return pair1[2] == pair2[1]
+-- SIMPLE_STRAIGHT = {}, -- подряд три с возрастанием или убыванием БЕЗ СЦЕПКИ
+function Combinations:checkSimpleStraight(combination)
+    return combination[2][1] - combination[1][2] == 1 and combination[3][1] - combination[2][2] == 1
 end
 
-function Combinations:checkSimpleStraight(inerComb)
-
+--  THREE_OF_A_KIND = {}, -- подряд три. без возрастания или убывания,
+function Combinations:checkThreeOfAKind(combination)
+    return combination[1][2] == combination[2][1] and combination[2][2] == combination[3][1]
 end
 
-function Combinations:checkChainStraight(inerComb)
+-- STRAIGHT = {}, -- подряд три с возрастанием или убыванием
+function Combinations:checkChainStraight(combination)
+    local rez = false
 
+    if combination[1][2] - combination[1][1] == 1 and combination[2][2] - combination[2][1] == 1 and combination[3][2] - combination[3][1] == 1 then
+                rez = true
+    end
+
+    if rez then
+        rez = combination[1][2] == combination[2][1] and combination[2][2] == combination[3][1]
+    end
+
+    return rez
 end
 
-function Combinations:checkFullStraight(inerComb)
+-- FLUSH = {}, -- три одинаковых
+function Combinations:checkFlush(combination)
+    local rez = false
+    local curValue = combination[1][1]
 
+    if curValue == combination[1][2] then
+        rez = true
+    else
+        rez = false
+        return rez
+    end
+
+    if curValue == combination[2][1] and curValue == combination[2][2] then
+        rez = true
+    else
+        rez = false
+        return rez
+    end
+
+    if curValue == combination[3][1] and curValue == combination[3][2] then
+        rez = true
+    else
+        rez = false
+        return rez
+    end
+
+    return rez
 end
