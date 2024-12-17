@@ -1,4 +1,5 @@
 require "src.lib.knife.test"
+Object = require "src.lib.classic"
 Knuckle = Object:extend()  -- локальное определение
 local Timer = require 'src.lib.knife.timer'
 -- Константы

@@ -9,6 +9,7 @@ function Button:new()
     self.isPressed = false
     self.isHover = false
     self.color = DEFAULT_COLOR_KNUCKLE
+    self.isVisible = false
 end
 
 function Button:update(dt)

@@ -33,6 +33,11 @@ function ScoreManager:update(dt, selectedKnucles, gameState)
     if gameState == GameStates.PLAYER_TURN then
 
     end
+
+    if gameState == GameStates.DISCARD then
+        self.combinations = {} 
+    end     
+
     -- заглушка
     self.complete = true
 end

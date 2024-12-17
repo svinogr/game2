@@ -149,6 +149,7 @@ function PlayState:update(dt)
     if self.currentState == GameStates.DISCARD then
         print("DISCARD")
         self.movingManager:update(dt, self.knucklesManager.selectedKnucles, GameStates.DISCARD)
+        self.scoreManager:update(dt, nil, GameStates.DISCARD)
         if self.movingManager.complete then
             print("change state")
             self.currentState = GameStates.DEALING
