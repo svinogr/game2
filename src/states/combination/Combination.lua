@@ -1,4 +1,5 @@
 require "src.lib.classic"
+local Object = require "src.lib.classic"
 
 COMBINATION_STATES = {
     NONE = "NONE",            -- просто наибольшая костяшка
@@ -58,6 +59,7 @@ function ThreeOfKind:check(combination)
 end
 
 -- SIMPLE_STRAIGHT = {}, -- подряд три с возрастанием или убыванием БЕЗ СЦЕПКИ
+-- {{1, 2}, {3, 4}, {5, 6}}
 SimpleStraight = Combination:extend()
 
 function SimpleStraight:visualName()    
@@ -65,7 +67,7 @@ function SimpleStraight:visualName()
 end
 
 function SimpleStraight:check(combination)
-    return combination[2][1] - combination[1][2] == 1 and combination[3][1] - combination[2][2] == 1
+    return combination[1][1] ==1 and combination[1][2] == 2 and combination[2][1] == 3 and  combination[2][2] == 4 and combination[3][1] == 5 and combination[3][2] == 6
 end
 
 --  STRAIGHT = {},        -- подряд три с возрастанием или убыванием
