@@ -6,18 +6,19 @@ require "src.objects.Backside"
 --карты
 --руку с картами
 function KnucklesManager:new()
-  self.deck          = {}
-  self.usedNumbers   = {}
-  self.handDeck      = {}
-  self.selectedKnucles  = {}
-  self.bakside       = nil
+  self.deck            = {}
+  self.usedNumbers     = {}
+  self.handDeck        = {}
+  self.selectedKnucles = {}
+  self.bakside         = nil
 end
 
 function KnucklesManager:initialize()
-self:createDeck()
+  self:createDeck()
+  self.quantityNotUsedKnuclkes = #self.deck
 end
 
--- добавление карт из колоды 
+-- добавление карт из колоды
 --[[ function ManagerKnuckles:addNewKnucles(deckSize)
      -- узнаем сколько карт нужно добавить
     local neededQyantity  = deckSize - #self.handDeck
@@ -30,14 +31,14 @@ end
      print(#self.deck)
      print(#self.handDeck)
 
-  
+
 end ]]
 
 function KnucklesManager:getRandomKnucles2(quantity)
   --[[  if #self.usedNumbers >= #self.deck then
         error("All numbers have been used.")
     end]]
-   local deck = {} 
+  local deck = {}
   for i = 1, quantity do
     local number = self:getRandomNumber()
     local kn = self.deck[number]
@@ -45,80 +46,91 @@ function KnucklesManager:getRandomKnucles2(quantity)
     table.insert(self.handDeck, kn)
     --self.handDeck[i] = kn
   end
-   return self.handDeck
+  return self.handDeck
 end
 
-
 function KnucklesManager:getRandomKnucles(quantity)
-   local deck = {} 
+  local deck = {}
+  if quantity > self.quantityNotUsedKnuclkes then
+    quantity = self.quantityNotUsedKnuclkes
+  end
+
   for i = 1, quantity do
     local number = self:getRandomNumber()
     local kn = self.deck[number]
-    --print("kn:", kn.v1, kn.v2, 50)       -- Добавьте это для отладки
     table.insert(deck, kn)
-    --self.handDeck[i] = kn
+    self.quantityNotUsedKnuclkes = self.quantityNotUsedKnuclkes - 1
   end
 
-   return deck
+  return deck
 end
 
-function KnucklesManager:addKnucklesToHandDeck(knuckles,freePositions)
-  if #knuckles ~= #freePositions then
-      error("несовпадение количества карт и свободных позиций  " ..#knuckles..'-'.. #freePositions)
+function KnucklesManager:addKnucklesToHandDeck(knuckles, freePositions)
+  if #knuckles > #freePositions then
+    error("несовпадение количества карт и свободных позиций  " .. #knuckles .. '-' .. #freePositions)
   end
 
-   -- каждой карте присваиваем свободную позицию
-   -- и помещаем такую карту в руку
+  -- каждой карте присваиваем свободную позицию
+  -- и помещаем такую карту в руку
   for i = 1, #knuckles do
-       knuckles[i].toPosition = freePositions[i]
-       freePositions[i].isFree = false
-       local idPositionForDeck = knuckles[i].toPosition.id
-       table.insert(self.handDeck, idPositionForDeck, knuckles[i])
-  end 
+    knuckles[i].toPosition = freePositions[i]
+    freePositions[i].isFree = false
+    local idPositionForDeck = knuckles[i].toPosition.id
+    table.insert(self.handDeck, idPositionForDeck, knuckles[i])
+  end
 end
 
 function KnucklesManager:addKnucklesToSelected(knuckles)
-
-     if knuckles.isSelect then
-      local wasNotAddedToSelected = true
-      for i = 1, #self.selectedKnucles do
-        if self.selectedKnucles[i].id == knuckles.id then
-          wasNotAddedToSelected = false
-          break
-        end
+  if knuckles.isSelect then
+    local wasNotAddedToSelected = true
+    for i = 1, #self.selectedKnucles do
+      if self.selectedKnucles[i].id == knuckles.id then
+        wasNotAddedToSelected = false
+        break
       end
-      if wasNotAddedToSelected then
-         table.insert(self.selectedKnucles, knuckles)         
-      end
-
-     else
-      for i = 1, #self.selectedKnucles do
-        if self.selectedKnucles[i].id == knuckles.id then
-          table.remove(self.selectedKnucles, i)
-          break
-        end
     end
-     
-
-     end
-
+    if wasNotAddedToSelected then
+      table.insert(self.selectedKnucles, knuckles)
+    end
+  else
+    for i = 1, #self.selectedKnucles do
+      if self.selectedKnucles[i].id == knuckles.id then
+        table.remove(self.selectedKnucles, i)
+        break
+      end
+    end
+  end
 end
 
+function KnucklesManager:replaceOrderKnucles(order)
+  local res = {}
+  local tempSelected = self.selectedKnucles
 
+  for index, valueOrder in ipairs(order) do
+    for i = #tempSelected, 1, -1  do
+      if (valueOrder[1] == tempSelected[i].v1 and valueOrder[2] == tempSelected[i].v2) or
+          (valueOrder[1] == tempSelected[i].v2 and valueOrder[2] == tempSelected[i].v1) then
+        if valueOrder[1] == tempSelected[i].v2 then
+          local tenmp = tempSelected[i].v1
+          tempSelected[i].v1 = tempSelected[i].v2
+          tempSelected[i].v2 = tenmp
 
-
-
-
-function KnucklesManager: dealingKnucles(freePositions)
- --[[   if #self.handDeck < quantity then
-         self:getRandomKnucles(quantity)
-   end ]]
-   self:getRandomKnucles(#freePositions)
-   
-   return self.handDeck
-  
+        
+        end
+        res[index] = tempSelected[i]
+        table.remove(tempSelected, i)
+        break
+      end
+    end
+  end
+  self.selectedKnucles = res
 end
 
+function KnucklesManager:dealingKnucles(freePositions)
+  self:getRandomKnucles(#freePositions)
+
+  return self.handDeck
+end
 
 function KnucklesManager:createDeck()
   local index = 1
@@ -135,8 +147,8 @@ end
 
 function KnucklesManager:createBackSide()
   print("create backside")
-  self.bakside =  BackSide(DEFAULT_SIZE_KNUCKLE[1], DEFAULT_SIZE_KNUCKLE[2])
---  print(self.bakside == nil)
+  self.bakside = BackSide(DEFAULT_SIZE_KNUCKLE[1], DEFAULT_SIZE_KNUCKLE[2])
+  --  print(self.bakside == nil)
 end
 
 --[[ function ManagerKnuckles:getBackside()
@@ -172,16 +184,13 @@ function KnucklesManager:getRandomNumber()
 end
 
 function KnucklesManager:removeSelectedKnucles()
-  for i =1, #self.selectedKnucles do
-      for j =  #self.handDeck, 1, -1 do
-         if self.selectedKnucles[i].id == self.handDeck[j].id then
-          table.remove(self.handDeck, j)
-          end
+  for i = 1, #self.selectedKnucles do
+    for j = #self.handDeck, 1, -1 do
+      if self.selectedKnucles[i].id == self.handDeck[j].id then
+        table.remove(self.handDeck, j)
       end
+    end
   end
 
   self.selectedKnucles = {}
 end
-
-
-

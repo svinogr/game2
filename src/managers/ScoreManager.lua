@@ -26,24 +26,33 @@ function ScoreManager:update(dt, selectedKnucles, gameState)
             self.combinations = {}
             return
         end
-        self.combinations = {} 
+        self.combinations = {}
         self:checkVariantCombinations(selectedKnucles)
     end
 
-    if gameState == GameStates.PLAYER_TURN then
-
+    if gameState == GameStates.SCORING then
+        self:scoring()
+        -- снова ставим их выбраными чтобы мувинг менеджер убрал их
+        for i = 1, #selectedKnucles do
+            selectedKnucles[i].isSelect = true
+        end
+        self.complete = true
     end
 
     if gameState == GameStates.DISCARD then
-        self.combinations = {} 
-    end     
+        self.combinations = {}
+    end
 
     -- заглушка
-    self.complete = true
+    -- self.complete = true
+end
+
+function ScoreManager:scoring()
+    self.tabloScore.score = self.tabloScore.score + 10
 end
 
 function ScoreManager:render()
-   -- отрисовака окна очков
+    -- отрисовака окна очков
 
     self.tabloScore:draw()
 
@@ -51,12 +60,11 @@ function ScoreManager:render()
     if #self.combinations > 0 then
         self:drawVariantCombinations()
     end
-  --  self.combinations = {}
+    --  self.combinations = {}
 end
 
 function ScoreManager:checkVariantCombinations(knuckles)
-    
-    if #knuckles  ~= 3 then  
+    if #knuckles ~= 3 then
         self.combinations = {}
         return
     end
@@ -65,17 +73,13 @@ function ScoreManager:checkVariantCombinations(knuckles)
 end
 
 function ScoreManager:drawVariantCombinations()
+    local x = VIRTUAL_WIDTH / 2 - 150
+    local y = VIRTUAL_HEIGHT / 2 - 15
 
-        local x = VIRTUAL_WIDTH / 2 - 150
-        local y = VIRTUAL_HEIGHT / 2 - 15
-
-        love.graphics.rectangle("line", x, y, 300, 30) -- заменить на arrangement
-        local str = "Комбинации: "
-        for i, combination in ipairs(self.combinations) do
-            o = true
-            love.graphics.print(combination.visualName(), 300 + i*60, 30)         
-        end
-
-        
-
+    love.graphics.rectangle("line", x, y, 300, 30)     -- заменить на arrangement
+    local str = "Комбинации: "
+    for i, combination in ipairs(self.combinations) do
+        o = true
+        love.graphics.print(combination.visualName(), 300 + i * 60, 30)
+    end
 end

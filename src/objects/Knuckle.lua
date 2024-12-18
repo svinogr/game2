@@ -47,12 +47,9 @@ end
 
 -- Выбор костяшки (подъем/опускание)
 function Knuckle:select()
-    
     self.isSelect = not self.isSelect
     local offset = self.isSelect and -CONSTANTS.SELECT_OFFSET or CONSTANTS.SELECT_OFFSET
     self.y = self.y + offset
-    
-
 end
 
 -- Обработка наведения мыши
@@ -88,8 +85,8 @@ function Knuckle:draw()
     love.graphics.line(self.x + 8, self.y + self.height/2,
                       self.x + self.width - 8, self.y + self.height/2)
     
-   self:drawPoints("up")
-    self:drawPoints("down")
+   -- self:drawPoints("up")R
+   -- self:drawPoints("down")
     self:drawShadows(self.color)
     self:hover()
     love.graphics.pop()

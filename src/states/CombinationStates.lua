@@ -23,6 +23,7 @@ function CombinationsStates:check(cards)
 end
 
 function CombinationsStates:addStateCombinations()
+    table.insert(self.addedVisualCombinations, NonPair())
     table.insert(self.addedVisualCombinations, OnePair())
     table.insert(self.addedVisualCombinations, ThreeOfKind())
     table.insert(self.addedVisualCombinations, SimpleStraight())
@@ -138,14 +139,20 @@ function CombinationsStates:combinationToVisualType()
             if value:check(self.allGenerationCombinations[i]) then
                 if value.curentCombinationValues < multiplication then
                     value.curentCombinationValues = multiplication
+                    -- добавляем в комбинаци цифровое отображение сгенирируемой комбинации
+                    value.curentCombination = self.allGenerationCombinations[i]
                 end
             end
         end
     end
-
+     
+    local rare = 0
     for i = 1, #self.addedVisualCombinations do
-        if self.addedVisualCombinations[i].curentCombinationValues > 0 then
-            table.insert(self.visualCombinations, self.addedVisualCombinations[i])
+         
+        if self.addedVisualCombinations[i].curentCombinationValues > 0 and self.addedVisualCombinations[i]:getRare() > rare then
+            self.visualCombinations = {}
+            table.insert(self.visualCombinations,self.addedVisualCombinations[i])
+            rare = self.addedVisualCombinations[i]:getRare()
         end
     end
 end

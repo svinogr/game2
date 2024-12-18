@@ -50,7 +50,7 @@ function ManagerArrangement:new()
             height = DEFAULT_SIZE_KNUCKLES[2] 
         },
         [ZONES.DISCARD] = {
-            x = ofsetXY,
+            x = -150,
             y = handZoneY - DEFAULT_SIZE_KNUCKLES[2] - 10,
             width = DEFAULT_SIZE_KNUCKLES[1] + 15,-- чтобы было видно из под карт
             height = DEFAULT_SIZE_KNUCKLES[2]

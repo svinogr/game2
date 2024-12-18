@@ -15,10 +15,16 @@ Combination = Object:extend()
 
 function Combination:new()
     self.curentCombinationValues = 0
+    self.curentCombination = {}
+
 end
 
 function Combination:visualName()
     
+end
+
+function Combination:getRare()
+    return 0
 end
 
 function Combination:check(combination)
@@ -37,8 +43,27 @@ function Combination:draw()
  love.graphics.print(self.curentCombinationValues, 0, 0)    
 end
 
+-- NONE   просто наибольшая костяшка
+NonPair = Combination:extend() 
+function NonPair:getRare()
+    return 1
+end
+
+function NonPair:visualName()
+    return COMBINATION_STATES.NONE
+end
+
+function NonPair:check(combination)
+   return true
+end
+
+
 --ONE_PAIR = {},        -- подряд две. одна за другой
 OnePair = Combination:extend()
+function OnePair:getRare()
+    return 2
+end
+
 function OnePair:visualName()
    return COMBINATION_STATES.ONE_PAIR 
 end
@@ -49,6 +74,10 @@ end
 
 --THREE_OF_A_KIND = {}, -- подряд три. без возрастания или убывания,
 ThreeOfKind = Combination:extend()
+
+function ThreeOfKind:getRare()
+    return 3
+end
 
 function ThreeOfKind:visualName()
    return COMBINATION_STATES.THREE_OF_A_KIND 
@@ -62,6 +91,10 @@ end
 -- {{1, 2}, {3, 4}, {5, 6}}
 SimpleStraight = Combination:extend()
 
+function SimpleStraight:getRare()
+    return 6
+end
+
 function SimpleStraight:visualName()    
     return COMBINATION_STATES.SIMPLE_STRAIGHT 
 end
@@ -72,6 +105,10 @@ end
 
 --  STRAIGHT = {},        -- подряд три с возрастанием или убыванием
 Straight = Combination:extend()
+
+function Straight:getRare()
+    return 5
+end
 
 function Straight:visualName()    
     return COMBINATION_STATES.STRAIGHT 
@@ -93,7 +130,9 @@ end
 
 -- FLUSH = {},           -- три одинаковых
 Flush = Combination:extend()
-
+function Flush:getRare()
+    return 7
+end
 function Flush:visualName()    
     return COMBINATION_STATES.FLUSH 
 end

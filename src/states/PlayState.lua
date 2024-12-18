@@ -75,7 +75,6 @@ function PlayState:update(dt)
         end
 
 
-
         -- переместить карты на нужную позицию
         self.movingManager:update(dt, knucles, GameStates.DEALING)
         -- изменить состояние
@@ -120,6 +119,10 @@ function PlayState:update(dt)
                 if self.buttons[i].text == ButtonsTitle.RESET and #self.knucklesManager.selectedKnucles > 0 then
                     self.currentState = GameStates.DISCARD
                 elseif self.buttons[i].text == ButtonsTitle.TURN and #self.knucklesManager.selectedKnucles > 0 then
+                    -- получим комбинацию в которую нужно перевернуть карты
+                    local usedCombinationOrder = self.scoreManager.combinations[1].curentCombination
+                    self.knucklesManager:replaceOrderKnucles(usedCombinationOrder)
+
                     self.currentState = GameStates.PLAYER_TURN
                 end
 
@@ -129,21 +132,8 @@ function PlayState:update(dt)
 
         print("selectede " .. #self.knucklesManager.selectedKnucles)
         if not self.scoreManager.complete then
-        self.scoreManager:update(dt, self.knucklesManager.selectedKnucles, GameStates.PLAYER_THINK)
+            self.scoreManager:update(dt, self.knucklesManager.selectedKnucles, GameStates.PLAYER_THINK)
         end
-  --[[       
-   if self.scoreManager.complete then
-            for i = 1, #self.scoreManager.combinations do
-              print(""..i.."|"..self.scoreManager.combinations[i][1][1].."-"..
-                self.scoreManager.combinations[i][1][2].."|".. 
-                self.scoreManager.combinations[i][2][1].."-".. 
-                self.scoreManager.combinations[i][2][2].."|".. 
-                self.scoreManager.combinations[i][3][1].."-".. 
-                self.scoreManager.combinations[i][3][2].."|")
-            end
-        end
-        self.scoreManager.complete = false ]]
-
     end
 
     if self.currentState == GameStates.DISCARD then
@@ -161,6 +151,7 @@ function PlayState:update(dt)
     if self.currentState == GameStates.PLAYER_TURN then
         print("PLAYER_TURN")
         self.movingManager:update(dt, self.knucklesManager.selectedKnucles, GameStates.PLAYER_TURN)
+
         if self.movingManager.complete then
             print("change state")
             self.currentState = GameStates.SCORING
@@ -172,14 +163,23 @@ function PlayState:update(dt)
 
     if self.currentState == GameStates.SCORING then
         print("SCORING")
-        self.scoreManager:update(dt, self.knucklesManager.selectedKnucles, GameStates.SCORING)
+
+        if not self.scoreManager.complete then
+            self.scoreManager:update(dt, self.knucklesManager.selectedKnucles, GameStates.SCORING)
+        end
 
         if self.scoreManager.complete then
-            print("change state")
-            self.arrangement:clearHandPositions(self.knucklesManager.selectedKnucles)
-            self.knucklesManager:removeSelectedKnucles()
+            print("change state scoring complete")
+    
+             
+            self.movingManager:update(dt, self.knucklesManager.selectedKnucles, GameStates.DISCARD)
+           -- self.movingManager.complete = false
+            if self.movingManager.complete then
+               self.arrangement:clearHandPositions(self.knucklesManager.selectedKnucles)
+                self.knucklesManager:removeSelectedKnucles()
 
-            self.currentState = GameStates.DEALING
+                self.currentState = GameStates.DEALING
+            end
         end
     end
 end
@@ -213,10 +213,8 @@ function PlayState:render()
     if self.debugMode then
         self.arrangement:debugRender()
     end
-   -- Отрисовка табло очков
+    -- Отрисовка табло очков
     self.scoreManager:render()
-
-
 end
 
 --[[ Вспомогательные методы ]]
