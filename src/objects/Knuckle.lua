@@ -85,8 +85,8 @@ function Knuckle:draw()
     love.graphics.line(self.x + 8, self.y + self.height/2,
                       self.x + self.width - 8, self.y + self.height/2)
     
-   -- self:drawPoints("up")R
-   -- self:drawPoints("down")
+    self:drawPoints("up")
+    self:drawPoints("down")
     self:drawShadows(self.color)
     self:hover()
     love.graphics.pop()

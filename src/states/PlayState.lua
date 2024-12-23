@@ -118,7 +118,7 @@ function PlayState:update(dt)
 
                 if self.buttons[i].text == ButtonsTitle.RESET and #self.knucklesManager.selectedKnucles > 0 then
                     self.currentState = GameStates.DISCARD
-                elseif self.buttons[i].text == ButtonsTitle.TURN and #self.knucklesManager.selectedKnucles > 0 then
+                elseif self.buttons[i].text == ButtonsTitle.TURN and #self.knucklesManager.selectedKnucles == 3 then
                     -- получим комбинацию в которую нужно перевернуть карты
                     local usedCombinationOrder = self.scoreManager.combinations[1].curentCombination
                     self.knucklesManager:replaceOrderKnucles(usedCombinationOrder)
