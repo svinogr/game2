@@ -155,30 +155,43 @@ function PlayState:update(dt)
         if self.movingManager.complete then
             print("change state")
             self.currentState = GameStates.SCORING
-
+            self.scoreManager:addToscoringKnucles(self.knucklesManager.selectedKnucles        ) 
             --- self.knucklesManager:removeSelectedKnucles() перенести в scoring
         end
     end
 
 
-    if self.currentState == GameStates.SCORING then
-        print("SCORING")
-
-        if not self.scoreManager.complete then
-            self.scoreManager:update(dt, self.knucklesManager.selectedKnucles, GameStates.SCORING)
-        end
-
-        if self.scoreManager.complete then
-            print("change state scoring complete")
+    if self.currentState == GameStates.SCORING then  -- Проверяем, находится ли текущее состояние в SCORING
+        print("SCORING")  -- Выводим сообщение о текущем состоянии
+        print(tostring(dt))  -- Выводим значение dt, чтобы видеть время, прошедшее с последнего кадра
     
-             
-            self.movingManager:update(dt, self.knucklesManager.selectedKnucles, GameStates.DISCARD)
-           -- self.movingManager.complete = false
-            if self.movingManager.complete then
-               self.arrangement:clearHandPositions(self.knucklesManager.selectedKnucles)
-                self.knucklesManager:removeSelectedKnucles()
+        if not self.scoreManager.isComplete then  -- Проверяем, завершено ли состояние в ScoreManager
+            local curentKnuckle = self.scoreManager.scoringKnucles[1]  -- Получаем первый объект из списка scoringKnucles
 
-                self.currentState = GameStates.DEALING
+            self.movingManager:scaleUp(dt, curentKnuckle)  -- Увеличиваем масштаб текущего объекта
+    
+            if curentKnuckle.isScale and not curentKnuckle.isScored then  -- Проверяем, находится ли объект в состоянии масштабирования и не был ли он уже оценен
+                self.scoreManager:update(dt, { curentKnuckle }, GameStates.SCORING)  -- Обновляем счет для текущего объекта
+            end
+    
+            if curentKnuckle.isScale then  -- Проверяем, находится ли объект в состоянии масштабирования
+                self.movingManager:scaleDown(dt, curentKnuckle)  -- Уменьшаем масштаб текущего объекта
+                if not curentKnuckle.isScale then  -- Если объект больше не в состоянии масштабирования
+                    self.scoreManager:removeScoringKnucles(curentKnuckle)  -- Удаляем объект из списка scoringKnucles в ScoreManager
+                end
+            end
+        end
+        
+        if self.scoreManager.isComplete then  -- Проверяем, завершено ли состояние в ScoreManager
+            print("change state scoring complete")  -- Выводим сообщение о завершении состояния SCORING
+            -- self.movingManager.complete = false  -- Комментарий о том, что состояние в MovingManager может быть сброшено
+            self.movingManager:update(dt, self.knucklesManager.selectedKnucles, GameStates.DISCARD)  -- Обновляем состояние объектов в MovingManager
+            
+            if self.movingManager.complete then  -- Проверяем, завершены ли действия в MovingManager
+                self.arrangement:clearHandPositions(self.knucklesManager.selectedKnucles)  -- Очищаем позиции рук для выбранных объектов
+                self.knucklesManager:removeSelectedKnucles()  -- Удаляем выбранные объекты из KnucklesManager
+                self.scoreManager.isComplete = false  -- Сбрасываем состояние завершенности в ScoreManager
+                self.currentState = GameStates.DEALING  -- Устанавливаем текущее состояние в DEALING
             end
         end
     end

@@ -10,13 +10,36 @@ COMBINATION_STATES = {
     FLUSH = "Flush",           -- три одинаковых
 }
 
+COMBINATION_SCORE_START = {
+    NONE = 0,
+    ONE_PAIR = 1,
+    THREE_OF_A_KIND = 2,
+    SIMPLE_STRAIGHT = 3,
+    STRAIGHT = 4,
+    FLUSH = 5,
+}
+
 
 Combination = Object:extend()
 
-function Combination:new()
+function Combination:new(level, score)
     self.curentCombinationValues = 0
     self.curentCombination = {}
+    self.level =  level
+    self.score =  score 
+    print("Initialized Combination with Score: " .. self.score .. ", Level: " .. self.level)
 
+end
+
+function Combination:levelUp()
+    self.level = self.level + 1
+end
+
+function Combination:getScore()
+    print("Score: " .. self.score .. ", Level: " .. self.level)  -- Вывод значений
+
+    return self.score * self.level
+    
 end
 
 function Combination:visualName()
@@ -44,7 +67,13 @@ function Combination:draw()
 end
 
 -- NONE   просто наибольшая костяшка
-NonPair = Combination:extend() 
+NonPair = Combination:extend()
+
+function NonPair:new()
+    NonPair.super.new(self, 1, COMBINATION_SCORE_START.NONE)
+end
+
+
 function NonPair:getRare()
     return 1
 end
@@ -60,6 +89,11 @@ end
 
 --ONE_PAIR = {},        -- подряд две. одна за другой
 OnePair = Combination:extend()
+
+function OnePair:new()
+    OnePair.super.new(self, 1, COMBINATION_SCORE_START.ONE_PAIR)
+    end
+
 function OnePair:getRare()
     return 2
 end
@@ -74,6 +108,9 @@ end
 
 --THREE_OF_A_KIND = {}, -- подряд три. без возрастания или убывания,
 ThreeOfKind = Combination:extend()
+function ThreeOfKind:new()
+    ThreeOfKind.super.new(self, 1, COMBINATION_SCORE_START.THREE_OF_A_KIND)
+end
 
 function ThreeOfKind:getRare()
     return 3
@@ -91,6 +128,10 @@ end
 -- {{1, 2}, {3, 4}, {5, 6}}
 SimpleStraight = Combination:extend()
 
+function SimpleStraight:new()
+    SimpleStraight.super.new(self, 1, COMBINATION_SCORE_START.SIMPLE_STRAIGHT)
+end
+
 function SimpleStraight:getRare()
     return 6
 end
@@ -105,6 +146,11 @@ end
 
 --  STRAIGHT = {},        -- подряд три с возрастанием или убыванием
 Straight = Combination:extend()
+
+function Straight:new()
+    Straight.super.new(self, 1, COMBINATION_SCORE_START.STRAIGHT)
+    print("Straight "..self.score)
+end
 
 function Straight:getRare()
     return 5
@@ -130,6 +176,11 @@ end
 
 -- FLUSH = {},           -- три одинаковых
 Flush = Combination:extend()
+
+function Flush:new()
+    Flush.super.new(self, 1, COMBINATION_SCORE_START.FLUSH)
+    print("Flush "..self.score)
+end
 function Flush:getRare()
     return 7
 end
@@ -164,3 +215,4 @@ function Flush:check(combination)
 
     return rez
 end
+

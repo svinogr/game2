@@ -1,5 +1,5 @@
 local Object = require "src.lib.classic"
-require "src.states.combination.Combination"
+local com = require "src.states.combination.Combination"
 
 
 CombinationsStates = Object:extend()
@@ -7,9 +7,7 @@ CombinationsStates = Object:extend()
 function CombinationsStates:new()
     self.addedVisualCombinations = {}
     self:addStateCombinations()
-
     self.visualCombinations = {}
-
     self.allGenerationCombinations = {}
 end
 
@@ -55,8 +53,6 @@ function CombinationsStates:generateCombinations(knuckles)
     local oneValues = {}
     table.insert(oneValues, { valuesCards[3] })
     table.insert(oneValues, { self:swap(valuesCards[3]) })
-
-
     --  теперь соеденим
     local merged = {}
     for i = 1, #twoValues do

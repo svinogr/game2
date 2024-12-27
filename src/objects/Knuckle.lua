@@ -31,6 +31,8 @@ function Knuckle:new(id, value, radius)
     self.isMove = true
     self.isSelect = false
     self.isHover = false
+    self.isScale = false
+    self.isScored = false
     self.up = 0
     self.rotation = 0
     self.toPosition = {

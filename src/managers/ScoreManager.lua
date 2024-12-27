@@ -4,7 +4,8 @@ ScoreManager = Object:extend()
 
 function ScoreManager:new()
     self.tabloScore = {}
-    self.complete = false
+    self.isComplete = false
+    self.scoringKnucles = {}
 end
 
 function ScoreManager:initialize(score, arrangement)
@@ -26,17 +27,20 @@ function ScoreManager:update(dt, selectedKnucles, gameState)
             self.combinations = {}
             return
         end
+
         self.combinations = {}
         self:checkVariantCombinations(selectedKnucles)
     end
 
     if gameState == GameStates.SCORING then
-        self:scoring()
+        self:scoring(selectedKnucles[1])
+        selectedKnucles[1].isSelect = true
         -- снова ставим их выбраными чтобы мувинг менеджер убрал их
-        for i = 1, #selectedKnucles do
+        --[[   for i = 1, #selectedKnucles do
             selectedKnucles[i].isSelect = true
-        end
-        self.complete = true
+        end ]]
+
+       -- self.complete = true
     end
 
     if gameState == GameStates.DISCARD then
@@ -47,8 +51,9 @@ function ScoreManager:update(dt, selectedKnucles, gameState)
     -- self.complete = true
 end
 
-function ScoreManager:scoring()
-    self.tabloScore.score = self.tabloScore.score + 10
+function ScoreManager:scoring(knuckle)
+    self.tabloScore.score = self.tabloScore.score + knuckle.v1 * knuckle.v2
+    knuckle.isScored = true
 end
 
 function ScoreManager:render()
@@ -76,10 +81,32 @@ function ScoreManager:drawVariantCombinations()
     local x = VIRTUAL_WIDTH / 2 - 150
     local y = VIRTUAL_HEIGHT / 2 - 15
 
-    love.graphics.rectangle("line", x, y, 300, 30)     -- заменить на arrangement
-    local str = "Комбинации: "
+    love.graphics.rectangle("line", x, y, 300, 30) -- заменить на arrangement
+
     for i, combination in ipairs(self.combinations) do
-        o = true
         love.graphics.print(combination.visualName(), 300 + i * 60, 30)
     end
+end
+
+function ScoreManager:removeScoringKnucles(knuckle)
+    for i = 1, #self.scoringKnucles do
+        if self.scoringKnucles[i].id == knuckle.id then
+            table.remove(self.scoringKnucles, i)
+       -- self.scoringKnucles[i] = nil
+            if #self.scoringKnucles == 0 then
+                self.isComplete = true
+                knuckle.isSelect = true
+            end
+
+            return
+        end
+    end
+end
+
+function ScoreManager:addToscoringKnucles(knuckles)
+ for index, value in ipairs(knuckles) do
+    table.insert(self.scoringKnucles, value)
+ end
+
+    
 end

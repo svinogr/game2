@@ -4,10 +4,11 @@ MovingManager = Object:extend()
 function MovingManager:new()
     self.speed = 500
     self.complete = false
+    self.indexCurrentObject = nil
     -- Добавляем параметры для дугообразного движения
-    self.arcHeight = 100   -- Максимальная высота подъёма
-    self.arcProgress = {}  -- Хранит прогресс движения для каждого объекта
-    self.maxScale = 1.3    -- Максимальный масштаб при подъеме
+    self.arcHeight = 100  -- Максимальная высота подъёма
+    self.arcProgress = {} -- Хранит прогресс движения для каждого объекта
+    self.maxScale = 1.3   -- Максимальный масштаб при подъеме
 end
 
 function MovingManager:initialize(arrangement)
@@ -26,14 +27,13 @@ function MovingManager:update(dt, objects, gameState, usedCombination)
     end
 end
 
-
-function MovingManager:turnPositions(dt, objects, usedCombination)
+function MovingManager:turnPositions(dt, objects)
     self.complete = true
-    local fieldIndex = 1  -- Индекс для позиций на поле
+    local fieldIndex = 1 -- Индекс для позиций на поле
     for i = 1, #objects do
         if objects[i].isSelect then
-              -- Устанавливаем поворот на 90 градусов (math.pi/2 радиан)
-           objects[i].rotation = -  math.pi / 2
+            -- Устанавливаем поворот на 90 градусов (math.pi/2 радиан)
+            objects[i].rotation = -math.pi / 2
 
             local dx = self.managerArrangement.gameFieldPositions.x[i]
             local dy = self.managerArrangement.gameFieldPositions.y[i]
@@ -44,12 +44,60 @@ function MovingManager:turnPositions(dt, objects, usedCombination)
             else
                 self.complete = false
             end
-                       fieldIndex = fieldIndex + 1  -- Увеличиваем индекс только когда нашли выбранную костяшку
+
+            fieldIndex = fieldIndex + 1 -- Увеличиваем индекс только когда нашли выбранную костяшку
         end
     end
- end
+end
+
+function MovingManager:scaleUp(dt, object)
+   self.complete = true
+
+    if  object.isScale then
+        return
+    end
+
+    if self.indexCurrentObject == nil then
+        self.indexCurrentObject = object
+    end
+
+    local dS = self.maxScale - object.scale
+
+    if not self.indexCurrentObject.isScale then
+        self.indexCurrentObject.scale = math.min(self.indexCurrentObject.scale + self.speed/200 * dt, self.maxScale)
+    end
+
+    if self.indexCurrentObject.scale >= self.maxScale then
+        self.indexCurrentObject.scale = self.maxScale
+        self.indexCurrentObject.isScale = true
+        self.indexCurrentObject = nil
+    end
+end
+
+function MovingManager:scaleDown(dt, object)
+ --  self.complete = true
+    if not object.isScale then
+        return
+    end
+
+    if self.indexCurrentObject == nil then
+        self.indexCurrentObject = object
+    end
+
+    local dS = object.scale - 1
+
+    if self.indexCurrentObject.isScale then
+        self.indexCurrentObject.scale = math.max(self.indexCurrentObject.scale - self.speed/200 * dt, 1)
+    
+    end
 
 
+    if self.indexCurrentObject.scale <= 1 then
+        self.indexCurrentObject.scale = 1
+        self.indexCurrentObject.isScale = false
+        self.indexCurrentObject = nil
+    end
+end
 
 function MovingManager:reset(dt, objects)
     self.complete = true
@@ -97,6 +145,7 @@ function MovingManager:moveObject(object, targetX, targetY)
             startScale = object.scale or 1 -- Сохраняем начальный масштаб
         }
     end
+
     local arc = self.arcProgress[object]
     local dt = love.timer.getDelta()
     local speed = self.speed * dt
