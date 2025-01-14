@@ -155,7 +155,7 @@ function PlayState:update(dt)
         if self.movingManager.complete then
             print("change state")
             self.currentState = GameStates.SCORING
-            self.scoreManager:addToscoringKnucles(self.knucklesManager.selectedKnucles        ) 
+            self.scoreManager:addToscoringKnucles(self.knucklesManager.selectedKnucles)
             --- self.knucklesManager:removeSelectedKnucles() перенести в scoring
         end
     end
@@ -204,14 +204,12 @@ function PlayState:render()
     love.graphics.rectangle('fill', 0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT)
     love.graphics.setColor(1, 1, 1)
 
-
     -- Отрисовка игрового стола
     self:drawTable()
     -- отрисовка табло очков
     self.scoreManager:render()
     -- Отрисовка рубашки костяшек
     self.backSideKnucle:draw(DEFAULT_COLOR_BACKSIDE)
-
 
     -- Отрисовка кнопок
     if self.buttonsManager then
