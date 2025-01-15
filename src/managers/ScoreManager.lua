@@ -5,6 +5,7 @@ ScoreManager = Object:extend()
 function ScoreManager:new()
     self.tabloScore = {}
     self.isComplete = false
+    self.isEndLevel = false
     self.scoringKnucles = {}
 end
 
@@ -33,18 +34,20 @@ function ScoreManager:update(dt, selectedKnucles, gameState)
     end
 
     if gameState == GameStates.SCORING then
-        self:scoring(selectedKnucles[1])
-        selectedKnucles[1].isSelect = true
-        -- снова ставим их выбраными чтобы мувинг менеджер убрал их
-        --[[   for i = 1, #selectedKnucles do
-            selectedKnucles[i].isSelect = true
-        end ]]
+        local score = self:scoring(selectedKnucles[1])
+        self.tabloScore:update(dt, score)
 
-       -- self.complete = true
+        selectedKnucles[1].isSelect = true
+        
+        if self.tabloScore.isEndLevel then
+            self.isEndLevel = true
+        end
+     
     end
 
     if gameState == GameStates.DISCARD then
         self.combinations = {}
+
     end
 
     -- заглушка
@@ -52,13 +55,13 @@ function ScoreManager:update(dt, selectedKnucles, gameState)
 end
 
 function ScoreManager:scoring(knuckle)
-    self.tabloScore.score = self.tabloScore.score + knuckle.v1 * knuckle.v2
+    local score =  knuckle.v1 * knuckle.v2
     knuckle.isScored = true
+    return score
 end
 
 function ScoreManager:render()
     -- отрисовака окна очков
-
     self.tabloScore:draw()
 
     -- отрисовка возможных комбинаций
@@ -106,7 +109,5 @@ end
 function ScoreManager:addToscoringKnucles(knuckles)
  for index, value in ipairs(knuckles) do
     table.insert(self.scoringKnucles, value)
- end
-
-    
+ end 
 end

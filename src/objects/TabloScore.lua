@@ -9,6 +9,7 @@ function TabloScore:new(neededScore)
  self.two = 0
  self.score = 0
  self.scoreNeeded = neededScore or 0
+ self.isEndLevel = false
 end
 
 
@@ -17,14 +18,14 @@ function TabloScore:draw()
     self:createBarCurrentScore()
     self:createScoreValues()
     love.graphics.setColor(39/255, 193/255, 211/255) 
-    love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
-    
-
+    love.graphics.rectangle("line", self.x, self.y, self.width, self.height)  
 end
 
-function TabloScore:update()
-
-
+function TabloScore:update(dt, score)
+   self.score = self.score + score
+   if self.score >= self.scoreNeeded then
+    self.isEndLevel = true
+   end
 end 
 
 function TabloScore:createScoreValues()
@@ -33,7 +34,6 @@ function TabloScore:createScoreValues()
     local  tW = font:getWidth(self.one.." * "..self.two)
     local tH = font:getHeight(self.one)
     love.graphics.print(self.one.." * "..self.two, (self.width - tW)/2  , (self.height - tH))
-    
     love.graphics.setFont(font)
 end
 
@@ -55,12 +55,14 @@ end
      
      -- Рисуем прямоугольник с рамкой, который будет представлять бар необходимого счета
      love.graphics.rectangle("line", self.x, self.y, self.width, self.height/4)
- 
+     
      -- Устанавливаем цвет для заполнения (такой же, как и для рамки)
      love.graphics.setColor(39/255, 193/255, 211/255)
      
      -- Рисуем заполненный прямоугольник, который представляет текущий прогресс (например, 1/6 ширины)
-     love.graphics.rectangle("fill", self.x, self.y, self.width/6, self.height/4)
+     local progress = math.min((self.score / self.scoreNeeded) * self.width, self.width)
+
+     love.graphics.rectangle("fill", self.x, self.y, progress, self.height/4)
  
      -- Рисуем текст необходимого счета по центру баров
      love.graphics.print(self.scoreNeeded, (self.width - tW)/2, (self.height/4 - tH)/2 + self.y)
