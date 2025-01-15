@@ -23,7 +23,7 @@ PlayState = BaseState:extend()
 --[[ Инициализация состояния игры ]]
 function PlayState:new()
     local countKnucles = 5 -- Количество костяшек в руке/ все начальные перемнные перенсети в ентер
-    local scoreStart = 100
+    local scoreStart = 1000
 
     -- Создание основных игровых менеджеров
     self.backSideKnucle = BackSide(DEFAULT_SIZE_KNUCKLES, DEFAULT_START_POSITION_KNUCKLES)
@@ -60,6 +60,8 @@ end
 
 --[[ Обновление состояния игры ]]
 function PlayState:update(dt)
+  
+
     -- Обработка состояния раздачи
     if self.currentState == GameStates.DEALING then
         -- ролучаем свободные позиции
@@ -82,6 +84,17 @@ function PlayState:update(dt)
             self.currentState = GameStates.PLAYER_THINK
         end
     end
+
+
+    if self.knucklesManager.quantityNotUsedKnuclkes == 0 and self.scoreManager.isEndLevel ~= true then
+        print("change state")
+
+        -- переходим в магазин или начало игры
+        gStateMachine:change("gameover")
+    elseif  self.scoreManager.isEndLevel == true then
+        gStateMachine:change("title")
+    end
+
 
     -- Обработка состояния размышления игрока
     if self.currentState == GameStates.PLAYER_THINK then
@@ -128,15 +141,6 @@ function PlayState:update(dt)
 
                 self.buttons[i].isHover = false
             end
-
-
-            if self.scoreManager.isEndLevel then
-                print("change state")
-
-              -- переходим в магазин или начало игры
-
-
-            end
         end
 
         print("selectede " .. #self.knucklesManager.selectedKnucles)
@@ -176,7 +180,7 @@ function PlayState:update(dt)
 
         if not self.scoreManager.isComplete then                                    -- Проверяем, завершено ли состояние в ScoreManager
             local curentKnuckle = self.scoreManager.scoringKnucles
-            [1]                                                                     -- Получаем первый объект из списка scoringKnucles
+                [1]                                                                 -- Получаем первый объект из списка scoringKnucles
 
             self.movingManager:scaleUp(dt, curentKnuckle)                           -- Увеличиваем масштаб текущего объекта
 
@@ -201,7 +205,8 @@ function PlayState:update(dt)
                 self.arrangement:clearHandPositions(self.knucklesManager.selectedKnucles)           -- Очищаем позиции рук для выбранных объектов
                 self.knucklesManager:removeSelectedKnucles()                                        -- Удаляем выбранные объекты из KnucklesManager
                 self.scoreManager.isComplete = false                                                -- Сбрасываем состояние завершенности в ScoreManager
-                self.currentState = GameStates.DEALING                                              -- Устанавливаем текущее состояние в DEALING
+                self.currentState = GameStates
+                .DEALING                                                                            -- Устанавливаем текущее состояние в DEALING
             end
         end
     end

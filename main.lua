@@ -7,7 +7,7 @@ require "src.states.StateMachine"
 require "src.states.BaseState"
 --require 'states/CountdownState'
 require "src.states.PlayState"
---require 'states/ScoreState'
+require 'src.states.GameOverScreen'
 require "src.states.TitleScreenState"
 -- real resolution
 WINDOW_WIDTH = 800
@@ -43,12 +43,12 @@ function love.load()
     gStateMachine = StateMachine {
         ["title"] = function() return TitleScreenState() end,
         --  ['countdown'] = function() return CountdownState() end,
-        ["play"] = function() return PlayState() end
-        --  ['score'] = function() return ScoreState() end
+        ["play"] = function() return PlayState() end,
+        ['gameover'] = function() return GameOverScreenState() end
     }
 
-    --gStateMachine:change('title') начало
-    gStateMachine:change("play")
+    gStateMachine:change("title") --начало
+    --gStateMachine:change("play")
 
     -- initialize input table
     love.keyboard.keysPressed = {}
@@ -70,7 +70,7 @@ function love.resize(w, h)
     push:resize(w, h)
 end
 
-function love.keyboard.wasPrssed(key)
+function love.keyboard.wasPressed(key)
     if (love.keyboard.keysPressed[key]) then
         return true
     else
